@@ -1,0 +1,47 @@
+# ===== 操作系统 =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===== 编辑器 / IDE =====
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# ===== 打包产物 =====
+# 发布用的压缩包，游戏只用文件夹本身
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# ===== 日志 / 临时文件 =====
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+# ===== 游戏本地数据 =====
+# 只忽略临时缓存；正式资源 .tex / .xml / .png / .svg 需要提交
+*.ktex~
+*.tmp.png
+atlas-*.tmp
+modinfo.lua.bak
+
+# ===== 其他 =====
+# 本地私有配置，例如个人测试用的脚本片段
+/local/
+/private/

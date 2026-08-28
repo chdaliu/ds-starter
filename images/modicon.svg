@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d79a58"/>
+      <stop offset="0.5" stop-color="#b37436"/>
+      <stop offset="1" stop-color="#744316"/>
+    </linearGradient>
+    <linearGradient id="lid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efbb76"/>
+      <stop offset="1" stop-color="#b77a36"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff6b6b"/>
+      <stop offset="0.5" stop-color="#d62f3f"/>
+      <stop offset="1" stop-color="#8f1424"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3b0"/>
+      <stop offset="0.5" stop-color="#f2c14e"/>
+      <stop offset="1" stop-color="#9d6a12"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+
+  <!-- warm starter glow -->
+  <ellipse cx="64" cy="70" rx="46" ry="40" fill="#ffd76a" opacity="0.22" filter="url(#glow)"/>
+
+  <!-- crate body -->
+  <rect x="22" y="50" width="84" height="60" rx="7"
+        fill="url(#wood)" stroke="#3a210c" stroke-width="3"/>
+  <!-- lid -->
+  <rect x="18" y="40" width="92" height="20" rx="6"
+        fill="url(#lid)" stroke="#3a210c" stroke-width="3"/>
+
+  <!-- metal bands -->
+  <rect x="32" y="50" width="9" height="60" fill="url(#gold)" stroke="#5b3a08" stroke-width="1.5"/>
+  <rect x="87" y="50" width="9" height="60" fill="url(#gold)" stroke="#5b3a08" stroke-width="1.5"/>
+  <rect x="22" y="67" width="84" height="8" fill="url(#gold)" stroke="#5b3a08" stroke-width="1.5"/>
+
+  <!-- red ribbon -->
+  <rect x="59" y="40" width="10" height="70" fill="url(#ribbon)" stroke="#5c0a16" stroke-width="1.5"/>
+  <rect x="18" y="62" width="92" height="10" fill="url(#ribbon)" stroke="#5c0a16" stroke-width="1.5"/>
+
+  <!-- ribbon bow -->
+  <path d="M64 44 C50 24, 36 30, 44 43 C49 51, 58 47, 64 44 Z"
+        fill="url(#ribbon)" stroke="#5c0a16" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M64 44 C78 24, 92 30, 84 43 C79 51, 70 47, 64 44 Z"
+        fill="url(#ribbon)" stroke="#5c0a16" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="64" cy="44" r="6" fill="url(#ribbon)" stroke="#5c0a16" stroke-width="2"/>
+
+  <!-- gold star on the front -->
+  <path d="M64 69 L67.6 77.4 L76.8 78.2 L69.9 84.2 L71.9 93.2 L64 88.5 L56.1 93.2 L58.1 84.2 L51.2 78.2 L60.4 77.4 Z"
+        fill="url(#gold)" stroke="#5b3a08" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="61" cy="78" r="1.6" fill="#fffbe0" opacity="0.9"/>
+
+  <!-- sparkles -->
+  <path d="M24 32 L26 27 L28 32 L33 34 L28 36 L26 41 L24 36 L19 34 Z" fill="#fff2a8" opacity="0.9"/>
+  <path d="M101 24 L102.5 20 L104 24 L108 25.5 L104 27 L102.5 31 L101 27 L97 25.5 Z" fill="#fff2a8" opacity="0.8"/>
+  <circle cx="104" cy="48" r="2.2" fill="#fff6c2" opacity="0.9"/>
+</svg>

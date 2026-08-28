@@ -1,0 +1,67 @@
+-- Permanent personal glow. The radius grows with the number of
+-- Magiluminescence amulets stored in altar containers.
+
+local START_RADIUS = 2
+local STEP = 0.5
+local MAX_RADIUS = 8
+
+local Glimmer = Class(function(self, inst)
+    self.inst = inst
+    self.radius = START_RADIUS
+end)
+
+function Glimmer:GetRadius()
+    return self.radius
+end
+
+function Glimmer:SetRadius(radius)
+    self.radius = math.max(START_RADIUS, math.min(MAX_RADIUS, radius))
+    self:Apply()
+end
+
+function Glimmer:Apply()
+    local player = self.inst
+    if player == nil or not player:IsValid() then
+        return
+    end
+
+    local glow = player._ds_starter_glow
+    if glow == nil or not glow:IsValid() then
+        glow = SpawnPrefab("ds_starter_glow")
+        if glow == nil then
+            return
+        end
+        glow.persists = false
+        player._ds_starter_glow = glow
+    end
+
+    local x, y, z = player.Transform:GetWorldPosition()
+    glow.Transform:SetPosition(x, y + 0.9, z)
+    glow.Light:SetRadius(self.radius)
+    glow.Light:Enable(true)
+
+    if self.follow_task == nil then
+        self.follow_task = player:DoPeriodicTask(0.1, function()
+            local current = player._ds_starter_glow
+            if current == nil or not current:IsValid() then
+                return
+            end
+            local px, py, pz = player.Transform:GetWorldPosition()
+            current.Transform:SetPosition(px, py + 0.9, pz)
+        end)
+    end
+end
+
+function Glimmer:OnSave()
+    return { radius = self.radius }
+end
+
+function Glimmer:OnLoad(data)
+    -- Radius is derived from the altar container.
+    self.radius = START_RADIUS
+    self.inst:DoTaskInTime(0, function()
+        self:Apply()
+    end)
+end
+
+return Glimmer
