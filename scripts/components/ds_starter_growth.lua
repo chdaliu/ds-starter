@@ -56,9 +56,22 @@ end
 
 -- Used by the altar container: stored item counts are the source of truth.
 function Growth:SetBonuses(purple, red, blue)
-    self.bonus = clamp((purple or 0) * STEP, 0, MAX_BONUS)
-    self.red_bonus = clamp((red or 0) * STEP, 0, MAX_RESIST)
-    self.blue_bonus = clamp((blue or 0) * STEP, 0, MAX_RESIST)
+    local new_bonus = clamp((purple or 0) * STEP, 0, MAX_BONUS)
+    local new_red = clamp((red or 0) * STEP, 0, MAX_RESIST)
+    local new_blue = clamp((blue or 0) * STEP, 0, MAX_RESIST)
+
+    -- The altar recalculates periodically. Only reapply when something
+    -- actually changed, otherwise the HUD would refresh every tick.
+    if new_bonus == self.bonus
+        and new_red == self.red_bonus
+        and new_blue == self.blue_bonus
+    then
+        return
+    end
+
+    self.bonus = new_bonus
+    self.red_bonus = new_red
+    self.blue_bonus = new_blue
     self:Apply()
 end
 
@@ -79,7 +92,18 @@ function Growth:Apply()
         end
         local percent = health:GetPercent()
         health:SetMaxHealth(self.base_health * (1 + self.bonus))
-        health:SetPercent(percent)
+        health.currenthealth = math.min(
+            health:GetMaxHealth(),
+            health.maxhealth * percent
+        )
+        local new_percent = health:GetPercent()
+        -- Equal old/new percentages refresh the HUD max without triggering
+        -- the "health up/down" sound.
+        self.inst:PushEvent("healthdelta", {
+            oldpercent = new_percent,
+            newpercent = new_percent,
+            overtime = true,
+        })
     end
 
     local hunger = self.inst.components.hunger
@@ -88,8 +112,14 @@ function Growth:Apply()
             self.base_hunger = hunger.max
         end
         local percent = hunger:GetPercent()
-        hunger:SetMax(self.base_hunger * (1 + self.bonus))
-        hunger:SetPercent(percent)
+        hunger.max = self.base_hunger * (1 + self.bonus)
+        hunger.current = math.min(hunger.max, hunger.max * percent)
+        local new_percent = hunger:GetPercent()
+        self.inst:PushEvent("hungerdelta", {
+            oldpercent = new_percent,
+            newpercent = new_percent,
+            overtime = true,
+        })
     end
 
     local sanity = self.inst.components.sanity
@@ -98,8 +128,17 @@ function Growth:Apply()
             self.base_sanity = sanity.max
         end
         local percent = sanity:GetPercent()
-        sanity:SetMax(self.base_sanity * (1 + self.bonus))
-        sanity:SetPercent(percent)
+        sanity.max = self.base_sanity * (1 + self.bonus)
+        sanity.current = math.min(
+            sanity:GetMaxSanity(),
+            sanity.max * percent
+        )
+        local new_percent = sanity:GetPercent()
+        self.inst:PushEvent("sanitydelta", {
+            oldpercent = new_percent,
+            newpercent = new_percent,
+            overtime = true,
+        })
     end
 
     local combat = self.inst.components.combat

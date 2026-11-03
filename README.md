@@ -4,8 +4,8 @@
 
 > 简体中文 · [English](#english)
 >
-> 项目中文名：**新手套装**。面向《饥荒》单机版的新手/便利模组。所有功能默认关闭，按需在游戏内开启。
-> A starter / quality-of-life mod for **Don't Starve (single-player)**. Everything is off by default; enable only what you want.
+> 项目中文名：**新手套装**。面向《饥荒》单机版的新手/便利模组。所有正式功能默认关闭，按需在游戏内开启；测试模式（开发用）默认开启。
+> A starter / quality-of-life mod for **Don't Starve (single-player)**. Everything is off by default except the development test loadout; enable only what you want.
 
 ---
 
@@ -68,7 +68,9 @@
   3. 需要 **炼金引擎（科学 Tier 2）** 解锁；
   4. 右键打开祭坛，像箱子一样放入/取出物品。
 - **设置**：`Sacrifice Growth`、`Glimmer`、`Auto Collect`
-- **容器**：64 格，固定 8×8，箱子式界面。
+- **外观**：使用洞穴远古遗迹中的远古伪科学站模型，尺寸缩小到接近科学机器。
+- **容器**：64 格，固定 8×8，箱子式界面；界面右上角有「关闭」按钮。
+- **堆叠计算**：按实际堆叠数量计算，例如一组 40 个紫宝石会直接计为 40 个。
 - **效果**：
   - 紫宝石：全属性 +5%/个，最高 +200%（40 个）；
   - 红宝石：热抗/灼烧抗性 +5%/个，最高 100%（20 个）；
@@ -95,28 +97,29 @@
 - **怎么用**：
   1. 开启 `Blood-Drinking Sword`；
   2. 进入存档时自动获得并装备；
-  3. 左键普通攻击，右键向鼠标位置闪现（最大 20 单位，1 秒冷却）。
+  3. 左键普通攻击，在**空地**上右键向鼠标位置闪现（最大 20 单位，1 秒冷却）。
 - **设置**：`Blood-Drinking Sword`
 - **成长**：只计算饮血剑的最后一击；普通怪物 +1 杀，Boss +50 杀；每 25 杀结算一次伤害；单次提升不足 1 点伤害时不增加。
 - **伤害节点**：0 杀 15；100 杀 45；1,000 杀 75；10,000 杀 105；100,000 杀 150。
-- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。
+- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。
 
 ### 9. 传送
 
 - **作用**：独立的传送面板，信标数量不限。
 - **怎么用**：
   1. 开启 `Teleport Beacons`；
-  2. 默认按 **Shift + 右键** 打开/关闭面板；
+  2. 在**空地**上默认按 **Shift + 右键** 打开/关闭面板；
   3. 在面板中「添加信标」「改名」「传送」「删除」。
 - **设置**：`Teleport Beacons`、`Teleport Shortcut`
 - **快捷键**：默认 Shift+右键，可改为 Ctrl+右键或 Alt+右键。
-- **注意**：不需要手持饮血剑；每页 8 个信标；新信标必须离已有信标至少 4 单位；洞穴、遗迹、室内、火山不能传送或添加信标。中文信标名可以正常输入和显示。
+- **注意**：不需要手持饮血剑；每页 8 个信标；新信标必须离已有信标至少 4 单位；洞穴、遗迹、室内、火山不能传送或添加信标。中文信标名可以正常输入和显示。右键点击物品、生物或建筑时不会打开传送面板，物品的右键操作保持原版。
 
 ### 10. 五格装备栏
 
 - **作用**：在原版 3 格装备栏基础上增加背包槽和项链槽。
 - **怎么用**：开启 `Five Equipment Slots`，正常装备物品即可。
 - **设置**：`Five Equipment Slots`
+- **槽位外观**：背包槽使用淡化的背包图标，项链槽使用淡化的护符图标，均与原版槽位边框保持一致。
 - **槽位限制**：
   - 背包槽只放背包；
   - 项链槽只放护符；
@@ -134,6 +137,7 @@
 - **设置**：`Infinite Backpack`
 - **容量**：每页最多 120 格，最多 9 页，共 **1080 格**。
 - **分页**：当前页物品超过一半时自动开放下一页；第 9 页满后不再增加。
+- **关闭按钮**：底部换页栏右侧有「关闭」按钮。
 - **其他**：主物品栏满后，拾取物会直接进入无限背包；背包里已有同类未满堆叠时优先堆入背包。
 - **世界跳转过滤**：开启无限背包后，跳转世界时会自动过滤传送机零件等世界专属物品；眼骨、Abigail 的花、Lucy、占卜棒等个人物品不受影响。
 - **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（已有则不会重复）。
@@ -157,20 +161,30 @@
 - **设置**：`9999 Stack Size`
 - **注意**：默认关闭；关闭后恢复原版堆叠上限。
 
+### 14. 测试模式（开发用）
+
+- **作用**：方便调试献祭祭坛与升级材料，首次进入世界时直接生成一个祭坛，并把一批升级材料放进角色物品栏。
+- **怎么用**：`Test Loadout (Dev)` 默认开启；进入世界后即可看到身边的祭坛和材料。
+- **材料**：紫宝石 ×40、红宝石 ×20、蓝宝石 ×20、魔光护符 ×3、懒人护符 ×3。
+- **是否重复发放**：每个存档只发放一次；关闭再开启 `Test Loadout (Dev)` 可重新发放。
+- **注意**：这是测试功能，正式发布前请关闭。
+
 ## 快捷键总表
 
 | 操作 | 默认快捷键 | 说明 |
 |---|---|---|
-| 饮血剑闪现 | 右键 | 需要手持饮血剑，最大 20 单位，1 秒冷却 |
-| 打开传送面板 | Shift + 右键 | 可在设置中改为 Ctrl/Alt + 右键 |
+| 饮血剑闪现 | 右键空地 | 需要手持饮血剑，最大 20 单位，1 秒冷却；物品/生物/建筑右键保持原版 |
+| 打开传送面板 | Shift + 右键空地 | 可在设置中改为 Ctrl/Alt + 右键；物品右键不受影响 |
 | 打开无限背包 | 右键点击已装备的背包图标 | 背包默认关闭 |
 | 打开祭坛容器 | 右键祭坛 | 放入/取出宝石、护符 |
 
 ## 默认设置
 
-**所有功能默认关闭。** 进入游戏前，在「模组」设置里按需开启：
+**除测试模式外，所有功能默认关闭。** 进入游戏前，在「模组」设置里按需开启：
 
 `No Freshness`、`No Durability`、`No Fuel Consumption`、`Health Lock`、`Instant Fishing`、`Sacrifice Growth`、`Glimmer`、`Blood-Drinking Sword`、`Teleport Beacons`、`Five Equipment Slots`、`Infinite Backpack`、`Auto Collect`、`9999 Stack Size`。
+
+`Test Loadout (Dev)` 是开发测试项，默认开启；正式发布前请手动关闭。
 
 `Teleport Shortcut` 不是开关，默认 `Shift + 右键`。
 
@@ -260,7 +274,9 @@
   3. Requires an **Alchemy Engine (Science Tier 2)**;
   4. Right-click the altar to open it like a chest and add/remove items.
 - **Settings**: `Sacrifice Growth`, `Glimmer`, `Auto Collect`
-- **Container**: 64 slots, fixed 8x8, chest-style UI.
+- **Visuals**: Uses the ruins' Ancient Pseudoscience Station model, scaled down to roughly Science Machine size.
+- **Container**: 64 slots, fixed 8x8, chest-style UI; a **Close** button is in the top-right corner.
+- **Stack counting**: Counts the actual stack size, so a stack of 40 purple gems counts as 40.
 - **Effects**:
   - Purple Gem: +5% all stats each, up to +200% (40);
   - Red Gem: heat/burn resistance +5% each, up to 100% (20);
@@ -287,28 +303,29 @@
 - **How to use**:
   1. Enable `Blood-Drinking Sword`;
   2. It is granted and equipped when entering a save;
-  3. Left click to attack, right click to blink toward the cursor (up to 20 units, 1 second cooldown).
+  3. Left click to attack, right click on **empty ground** to blink toward the cursor (up to 20 units, 1 second cooldown).
 - **Setting**: `Blood-Drinking Sword`
 - **Growth**: Only the final blow from this sword counts. Normal monsters +1 kill, bosses +50 kills; damage updates every 25 kills; a step worth less than 1 damage is ignored.
 - **Damage breakpoints**: 0 kills 15; 100 kills 45; 1,000 kills 75; 10,000 kills 105; 100,000 kills 150.
-- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing.
+- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking.
 
 ### 9. Teleport Beacons
 
 - **What it does**: An independent teleport panel with unlimited beacons.
 - **How to use**:
   1. Enable `Teleport Beacons`;
-  2. Press **Shift + Right Click** to open or close the panel;
+  2. Press **Shift + Right Click** on **empty ground** to open or close the panel;
   3. Use Add / Rename / Go / Delete in the panel.
 - **Settings**: `Teleport Beacons`, `Teleport Shortcut`
 - **Shortcut**: Shift+Right Click by default; can be changed to Ctrl+Right Click or Alt+Right Click.
-- **Notes**: No sword required. 8 beacons per page. New beacons need at least 4 units of spacing. Caves, ruins, interiors and the volcano are blocked. Chinese names are supported.
+- **Notes**: No sword required. 8 beacons per page. New beacons need at least 4 units of spacing. Caves, ruins, interiors and the volcano are blocked. Chinese names are supported. Right-clicking items, creatures or structures does not open the panel, so vanilla item right-click actions keep working.
 
 ### 10. Five Equipment Slots
 
 - **What it does**: Adds a backpack slot and an amulet slot to the normal equipment bar.
 - **How to use**: Enable `Five Equipment Slots` and equip items normally.
 - **Setting**: `Five Equipment Slots`
+- **Slot visuals**: The backpack slot uses a faded backpack icon and the amulet slot uses a faded amulet icon, both on the standard slot frame.
 - **Slot restrictions**:
   - Backpack slot: backpacks only;
   - Amulet slot: amulets only;
@@ -326,6 +343,7 @@
 - **Setting**: `Infinite Backpack`
 - **Capacity**: Up to 120 slots per page, 9 pages, **1,080 slots** total.
 - **Pages**: The next page unlocks when the current last page is more than half full; page 9 is the maximum.
+- **Close button**: A **Close** button is on the right side of the bottom paging bar.
 - **Other**: When the main inventory is full, pickups go into the backpack; unfinished stacks already in the backpack are filled first.
 - **World hop filter**: While the infinite backpack is enabled, Teleportato parts and similar world-progression items are filtered out on a world hop. Personal items such as the eyebone, Abigail's Flower, Lucy and the Divining Rod are kept.
 - **Notes**: Cannot be crafted; lost backpacks are not replaced; toggling the setting off and on grants one again if missing.
@@ -349,20 +367,30 @@
 - **Setting**: `9999 Stack Size`
 - **Notes**: Off by default; turning it off restores vanilla stack limits.
 
+### 14. Test Loadout (Dev)
+
+- **What it does**: Spawns a Sacrificial Altar next to the player and puts a batch of upgrade materials into the player's inventory on the first load, for testing the altar and its bonuses.
+- **How to use**: `Test Loadout (Dev)` is enabled by default; enter a world and look for the altar and materials.
+- **Materials**: 40 purple gems, 20 red gems, 20 blue gems, 3 yellow amulets, 3 orange amulets.
+- **Repeat behaviour**: Granted once per save. Toggling `Test Loadout (Dev)` off and on grants it again.
+- **Notes**: This is a development helper; turn it off before publishing.
+
 ## Shortcut summary
 
 | Action | Default | Notes |
 |---|---|---|
-| Blood-Drinking Sword blink | Right Click | Sword must be equipped; max 20 units, 1 second cooldown |
-| Open teleport panel | Shift + Right Click | Can be changed to Ctrl/Alt + Right Click |
+| Blood-Drinking Sword blink | Right Click on empty ground | Sword must be equipped; max 20 units, 1 second cooldown; item/creature/structure right-clicks keep vanilla behaviour |
+| Open teleport panel | Shift + Right Click on empty ground | Can be changed to Ctrl/Alt + Right Click; item right-clicks are unaffected |
 | Open infinite backpack | Right-click the equipped backpack icon | Starts closed |
 | Open altar container | Right-click the altar | Add/remove gems and amulets |
 
 ## Defaults
 
-**All features are off by default.** Enable what you need in the mod settings:
+**All regular features are off by default.** Enable what you need in the mod settings:
 
 `No Freshness`, `No Durability`, `No Fuel Consumption`, `Health Lock`, `Instant Fishing`, `Sacrifice Growth`, `Glimmer`, `Blood-Drinking Sword`, `Teleport Beacons`, `Five Equipment Slots`, `Infinite Backpack`, `Auto Collect`, `9999 Stack Size`.
+
+`Test Loadout (Dev)` is a development helper and is enabled by default; turn it off before publishing.
 
 `Teleport Shortcut` is not a toggle; its default is `Shift + Right Click`.
 

@@ -34,6 +34,7 @@ local IS_ZH = IsChinese()
 local PAGE_FORMAT = IS_ZH and "第 %d/%d 页" or "Page %d/%d"
 local PREV_TEXT = IS_ZH and "上一页" or "Prev"
 local NEXT_TEXT = IS_ZH and "下一页" or "Next"
+local CLOSE_TEXT = IS_ZH and "关闭" or "Close"
 
 -- Work out a grid that fits above the main inventory bar. The number of
 -- slots per page adapts to the screen, capped at 240.
@@ -354,7 +355,22 @@ local function OpenInfiniteBackpack(self, container, doer)
         SetPage(self, self.page < self.page_count and self.page + 1 or 1)
     end)
 
-    self.page_buttons = { prev, next }
+    local close = self:AddChild(ImageButton(
+        "images/ui.xml",
+        "button_small.tex",
+        "button_small_over.tex",
+        "button_small_disabled.tex"
+    ))
+    close:SetText(CLOSE_TEXT)
+    close:SetTextSize(20)
+    close:SetPosition(240, layout.button_y, 0)
+    close:SetOnClick(function()
+        self.inst:DoTaskInTime(0, function()
+            self:Close()
+        end)
+    end)
+
+    self.page_buttons = { prev, next, close }
     self.page_text = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
         20,

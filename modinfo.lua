@@ -233,4 +233,17 @@ configuration_options = {
         },
         default = false,
     },
+    {
+        name = "TEST_MODE",
+        label = L("Test Loadout (Dev)", "测试模式（开发用）"),
+        hover = L(
+            "Development/testing only: on first load, spawn a Sacrificial Altar next to the player and grant upgrade materials (purple/red/blue gems, yellow/orange amulets). Turn this off before publishing.",
+            "仅供开发测试：首次进入世界时在角色身边生成一个献祭祭坛，并给予一批升级材料（紫/红/蓝宝石、黄/橙护符）。正式发布前请关闭。"
+        ),
+        options = {
+            { description = OFF, data = false },
+            { description = ON, data = true },
+        },
+        default = true,
+    },
 }

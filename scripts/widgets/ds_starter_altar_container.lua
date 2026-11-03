@@ -2,6 +2,7 @@
 
 local InvSlot = GLOBAL.require("widgets/invslot")
 local Image = GLOBAL.require("widgets/image")
+local ImageButton = GLOBAL.require("widgets/imagebutton")
 local Text = GLOBAL.require("widgets/text")
 local ItemTile = GLOBAL.require("widgets/itemtile")
 
@@ -40,6 +41,7 @@ local HINT = IS_ZH
 local DESTROY_HINT = IS_ZH
     and "摧毁时先掉落全部物品，再返还半数材料"
     or "Destroying drops all stored items, then refunds half the recipe"
+local CLOSE_TEXT = IS_ZH and "关闭" or "Close"
 
 local function AddPanelBackground(self)
     local border = self:AddChild(Image("images/global.xml", "square.tex"))
@@ -56,6 +58,25 @@ local function AddPanelBackground(self)
     accent:SetTint(0.72, 0.55, 0.25, 1)
 
     self._panel_children = { border, inner, accent }
+end
+
+-- ItemSlot:Highlight/DeHighlight hardcode a base scale of 1. The altar
+-- slots are drawn at SLOT_SCALE, so use matching values instead; otherwise
+-- the first hover permanently enlarges a slot.
+local function ApplySlotScale(slot)
+    function slot:Highlight()
+        if not self.big then
+            self:ScaleTo(SLOT_SCALE, SLOT_SCALE * 1.3, .125)
+            self.big = true
+        end
+    end
+
+    function slot:DeHighlight()
+        if self.big then
+            self:ScaleTo(SLOT_SCALE * 1.3, SLOT_SCALE, .25)
+            self.big = false
+        end
+    end
 end
 
 local function OpenAltar(self, container, doer)
@@ -97,6 +118,22 @@ local function OpenAltar(self, container, doer)
     self.destroy_hint:SetPosition(0, -236)
     self.destroy_hint:SetColour(0.62, 0.62, 0.62, 1)
 
+    self.close_button = self:AddChild(ImageButton(
+        "images/ui.xml",
+        "button_small.tex",
+        "button_small_over.tex",
+        "button_small_disabled.tex"
+    ))
+    self.close_button:SetText(CLOSE_TEXT)
+    self.close_button:SetTextSize(18)
+    self.close_button:SetPosition(232, 212, 0)
+    self.close_button:SetOnClick(function()
+        self.inst:DoTaskInTime(0, function()
+            self:Close()
+        end)
+    end)
+    table.insert(self._panel_children, self.close_button)
+
     self:Show()
     self:StartUpdating()
 
@@ -127,6 +164,7 @@ local function OpenAltar(self, container, doer)
             local x = left + col * SPACING
             slot:SetPosition(x, top - row * SPACING, 0)
             slot:SetScale(SLOT_SCALE, SLOT_SCALE, SLOT_SCALE)
+            ApplySlotScale(slot)
             slot.side_align_tip = 160 - x
             slots[index] = slot
 
@@ -171,6 +209,7 @@ AddClassPostConstruct("widgets/containerwidget", function(self)
             end
             self._panel_children = nil
         end
+        self.close_button = nil
     end
 
     local old_close = self.Close
@@ -207,7 +246,7 @@ AddClassPostConstruct("widgets/containerwidget", function(self)
 
         KillCustomWidgets(self)
 
-        for _, slot in pairs(self.inv) do
+        for _, slot in pairs(self.inv or {}) do
             slot:Kill()
         end
         self.inv = {}
@@ -221,5 +260,13 @@ AddClassPostConstruct("widgets/containerwidget", function(self)
         end
 
         self.altar_closing = false
+
+        -- Restore the widget's normal container scale, and let the HUD
+        -- remove it like a regular container. Without this the altar widget
+        -- stayed alive in the container list with its custom scale.
+        self:SetScale(0.6, 0.6, 0.6)
+        self.inst:DoTaskInTime(0.3, function()
+            self.should_close_widget = true
+        end)
     end
 end)

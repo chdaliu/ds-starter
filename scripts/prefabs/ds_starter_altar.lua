@@ -3,7 +3,8 @@
 -- Taking items out reduces the effect; destroying it drops everything.
 
 local assets = {
-    Asset("ANIM", "anim/ruins_bowl.zip"),
+    -- Ancient Pseudoscience Station from the ruins.
+    Asset("ANIM", "anim/crafting_table.zip"),
     -- Only used as a fallback if the custom 8x8 UI is unavailable.
     Asset("ANIM", "anim/ui_chest_3x3.zip"),
 }
@@ -86,14 +87,14 @@ local function fn()
     inst.entity:AddAnimState()
     inst.entity:AddSoundEmitter()
 
-    MakeObstaclePhysics(inst, 0.45)
+    MakeObstaclePhysics(inst, 0.35)
 
-    inst.AnimState:SetBank("ruins_bowl")
-    inst.AnimState:SetBuild("ruins_bowl")
+    -- Use the ruins' Ancient Pseudoscience Station model, scaled down to
+    -- roughly the footprint of a Science Machine.
+    inst.AnimState:SetBank("crafting_table")
+    inst.AnimState:SetBuild("crafting_table")
     inst.AnimState:PlayAnimation("idle")
-    inst.Transform:SetScale(1.15, 1.15, 1.15)
-    inst.AnimState:SetMultColour(0.82, 0.72, 0.66, 1)
-    inst.AnimState:SetAddColour(0.08, 0.02, 0.02, 0)
+    inst.Transform:SetScale(0.55, 0.55, 0.55)
 
     inst:AddTag("altar")
     inst:AddTag("ds_starter_altar")
@@ -115,9 +116,21 @@ local function fn()
     inst.components.container.onopenfn = function(inst)
         inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_open")
         Recalculate()
+        -- Recalculate while open as well: merging a stack into an existing
+        -- stack does not fire "itemget", so a one-shot event is not enough.
+        if inst._ds_starter_recalc_task == nil then
+            inst._ds_starter_recalc_task = inst:DoPeriodicTask(
+                0.5,
+                Recalculate
+            )
+        end
     end
     inst.components.container.onclosefn = function(inst)
         inst.SoundEmitter:PlaySound("dontstarve/wilson/chest_close")
+        if inst._ds_starter_recalc_task ~= nil then
+            inst._ds_starter_recalc_task:Cancel()
+            inst._ds_starter_recalc_task = nil
+        end
         Recalculate()
     end
 
@@ -160,4 +173,13 @@ local function fn()
 end
 
 return Prefab("ds_starter_altar", fn, assets),
-    MakePlacer("ds_starter_altar_placer", "ruins_bowl", "ruins_bowl", "idle")
+    MakePlacer(
+        "ds_starter_altar_placer",
+        "crafting_table",
+        "crafting_table",
+        "idle",
+        nil,
+        nil,
+        nil,
+        0.55
+    )

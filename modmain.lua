@@ -34,6 +34,9 @@ local TELEPORT_SHORTCUT = Config("TELEPORT_SHORTCUT", "MOUSE_SHIFT")
 local GLIMMER = Config("GLIMMER", false)
 local INSTANT_FISH = Config("INSTANT_FISH", false)
 local STACK_9999 = Config("STACK_9999", false)
+-- Development helper: spawn an altar and hand out upgrade materials.
+-- Kept out of the feature blocks below so it can be toggled on its own.
+local TEST_MODE = Config("TEST_MODE", true)
 
 -- Follow the game language. Chinese is detected from the active locale, with
 -- fallbacks for older builds that only expose LanguageTranslator.
@@ -74,6 +77,9 @@ end)
 
 AddPlayerPostInit(function(inst)
     inst:DoTaskInTime(1, function()
+        -- Establish a fresh baseline so loading a save does not immediately
+        -- trigger the altar-change prompt.
+        GLOBAL.DS_STARTER_LAST_ALTAR_COUNTS = nil
         GLOBAL.DSStarterRecalculateAltarEffects()
     end)
 end)
@@ -93,7 +99,31 @@ AddPlayerPostInit(function(inst)
         if not INFINITE_BACKPACK then
             flags:ResetBackpackGranted()
         end
+        if not TEST_MODE then
+            flags:ResetTestAltarGranted()
+            flags:ResetTestMaterialsGranted()
+        end
     end)
+end)
+
+-- Vanilla OnItemEquip assumes the inventory bar has already been rebuilt.
+-- Items granted on spawn (the sword/backpack) can be equipped in the same
+-- tick, before that first rebuild, which would index a nil slot and crash.
+-- Defer the tile update in that case; the pending rebuild will pick the
+-- item up from the inventory.
+AddClassPostConstruct("widgets/inventorybar", function(self)
+    local old_on_item_equip = self.OnItemEquip
+    if old_on_item_equip == nil then
+        return
+    end
+
+    self.OnItemEquip = function(inv, item, slot)
+        if inv.equip == nil or inv.equip[slot] == nil then
+            inv.rebuild_pending = true
+            return
+        end
+        return old_on_item_equip(inv, item, slot)
+    end
 end)
 
 -- Declare shared globals early: single-player runs strict.lua, which errors
@@ -125,6 +155,24 @@ end
 -- All altars currently in the world. Their stored items are the source of
 -- the player's altar-derived bonuses.
 GLOBAL.DS_STARTER_ALTARS = {}
+-- Declared in the main chunk so strict.lua allows writes from callbacks.
+GLOBAL.DS_STARTER_LAST_ALTAR_COUNTS = nil
+
+-- Text-only feedback when the altar contents actually change. The HUD's
+-- health/hunger/sanity sounds are deliberately not used here.
+GLOBAL.DSStarterAltarBonusPrompt = function(player)
+    if player == nil
+        or not player:IsValid()
+        or player.components.talker == nil
+    then
+        return
+    end
+
+    player.components.talker:Say(L(
+        "The altar's effects have been updated.",
+        "祭坛效果已更新。"
+    ))
+end
 
 GLOBAL.DSStarterRecalculateAltarEffects = function()
     local player = GLOBAL.GetPlayer ~= nil and GLOBAL.GetPlayer() or nil
@@ -145,7 +193,11 @@ GLOBAL.DSStarterRecalculateAltarEffects = function()
         if altar:IsValid() and altar.components.container ~= nil then
             for _, item in pairs(altar.components.container.slots or {}) do
                 if item ~= nil and counts[item.prefab] ~= nil then
-                    counts[item.prefab] = counts[item.prefab] + 1
+                    local amount = 1
+                    if item.components.stackable ~= nil then
+                        amount = item.components.stackable:StackSize()
+                    end
+                    counts[item.prefab] = counts[item.prefab] + amount
                 end
             end
         end
@@ -172,6 +224,26 @@ GLOBAL.DSStarterRecalculateAltarEffects = function()
         autocollect:SetRadius(
             4 + math.min(counts.orangeamulet, 12) * 0.5
         )
+    end
+
+    local last = GLOBAL.DS_STARTER_LAST_ALTAR_COUNTS
+    local changed = last ~= nil and (
+        last.purplegem ~= counts.purplegem
+        or last.redgem ~= counts.redgem
+        or last.bluegem ~= counts.bluegem
+        or last.yellowamulet ~= counts.yellowamulet
+        or last.orangeamulet ~= counts.orangeamulet
+    )
+    GLOBAL.DS_STARTER_LAST_ALTAR_COUNTS = {
+        purplegem = counts.purplegem,
+        redgem = counts.redgem,
+        bluegem = counts.bluegem,
+        yellowamulet = counts.yellowamulet,
+        orangeamulet = counts.orangeamulet,
+    }
+
+    if changed then
+        GLOBAL.DSStarterAltarBonusPrompt(player)
     end
 end
 
@@ -715,6 +787,96 @@ if SACRIFICE_GROWTH or GLIMMER or AUTO_COLLECT then
 end
 
 ---------------------------------------------------------------------------
+-- 3.5 Test loadout (development helper)
+---------------------------------------------------------------------------
+if TEST_MODE then
+    -- A compact set that fits in the starting inventory and covers every
+    -- altar effect: purple/red/blue gems and yellow/orange amulets.
+    local TEST_MATERIALS = {
+        { prefab = "purplegem", count = 40 },
+        { prefab = "redgem", count = 20 },
+        { prefab = "bluegem", count = 20 },
+        { prefab = "yellowamulet", count = 3 },
+        { prefab = "orangeamulet", count = 3 },
+    }
+
+    local function IsPassable(x, z)
+        local world = GetTheWorld()
+        local map = world ~= nil and world.Map or nil
+        if map == nil or map.IsPassableAtPoint == nil then
+            return true
+        end
+        local ok, result = GLOBAL.pcall(map.IsPassableAtPoint, map, x, z)
+        if not ok then
+            return true
+        end
+        return result == true
+    end
+
+    local function SpawnTestAltar(player)
+        local px, py, pz = player.Transform:GetWorldPosition()
+        local offsets = {
+            { 2, 0 }, { -2, 0 }, { 0, 2 }, { 0, -2 },
+            { 2, 2 }, { -2, 2 }, { 2, -2 }, { -2, -2 },
+        }
+        for i = 1, #offsets do
+            local x = px + offsets[i][1]
+            local z = pz + offsets[i][2]
+            if IsPassable(x, z) then
+                local altar = GLOBAL.SpawnPrefab("ds_starter_altar")
+                if altar ~= nil then
+                    altar.Transform:SetPosition(x, py, z)
+                    return altar
+                end
+            end
+        end
+        return nil
+    end
+
+    local function GiveTestMaterials(player)
+        local inventory = player.components.inventory
+        if inventory == nil then
+            return false
+        end
+
+        local complete = true
+        for i = 1, #TEST_MATERIALS do
+            local entry = TEST_MATERIALS[i]
+            for _ = 1, entry.count do
+                local item = GLOBAL.SpawnPrefab(entry.prefab)
+                if item == nil
+                    or inventory:GiveItem(item, nil, nil, true) == nil
+                then
+                    complete = false
+                end
+            end
+        end
+        return complete
+    end
+
+    AddPlayerPostInit(function(inst)
+        inst:DoTaskInTime(1, function()
+            local flags = inst.components.ds_starter_flags
+            if flags == nil then
+                return
+            end
+
+            if not flags:HasTestAltarGranted() then
+                if SpawnTestAltar(inst) ~= nil then
+                    flags:SetTestAltarGranted()
+                end
+            end
+
+            if not flags:HasTestMaterialsGranted() then
+                if GiveTestMaterials(inst) then
+                    flags:SetTestMaterialsGranted()
+                end
+            end
+        end)
+    end)
+end
+
+---------------------------------------------------------------------------
 -- 4. Health lock
 ---------------------------------------------------------------------------
 if HEALTH_LOCK then
@@ -845,22 +1007,44 @@ if FIVE_SLOTS then
             return false
         end
 
-        -- Backpack and amulet get their own frames so they are visually
-        -- distinct from the body and head armour slots.
+        -- Backpack and amulet use the plain slot frame; a faded backpack /
+        -- amulet icon is layered on top by the equipslot hook below. This
+        -- keeps them consistent with the other slots instead of borrowing
+        -- the boat compass and lantern frames.
         if not HasSlot(GLOBAL.EQUIPSLOTS.BACK) then
             self:AddEquipSlot(
                 GLOBAL.EQUIPSLOTS.BACK,
                 "images/hud.xml",
-                "equip_slot_boat_utility.tex"
+                "inv_slot.tex"
             )
         end
         if not HasSlot(GLOBAL.EQUIPSLOTS.NECK) then
             self:AddEquipSlot(
                 GLOBAL.EQUIPSLOTS.NECK,
                 "images/hud.xml",
-                "equip_slot_boat_light.tex"
+                "inv_slot.tex"
             )
         end
+    end)
+
+    local WidgetImage = GLOBAL.require("widgets/image")
+
+    AddClassPostConstruct("widgets/equipslot", function(self)
+        local icon_name = nil
+        if self.equipslot == GLOBAL.EQUIPSLOTS.BACK then
+            icon_name = "backpack.tex"
+        elseif self.equipslot == GLOBAL.EQUIPSLOTS.NECK then
+            icon_name = "amulet.tex"
+        else
+            return
+        end
+
+        local icon = self:AddChild(WidgetImage(
+            "images/inventoryimages.xml",
+            icon_name
+        ))
+        icon:SetScale(0.8)
+        icon:SetTint(0.45, 0.5, 0.52, 0.7)
     end)
 
     -- Keep each equipment slot to its own item type.
@@ -1717,33 +1901,47 @@ if TELEPORT or YINXUE_SWORD then
         self.OnRightClick = function(pc, down)
             if down and not IsRenaming() then
                 local player = pc.inst
-                if player ~= nil
-                    and not player:HasTag("playerghost")
-                    and GLOBAL.TheInput:GetHUDEntityUnderMouse() == nil
-                then
-                    if TELEPORT and TeleportModifierDown() then
-                        GLOBAL.DSStarterTogglePanel()
-                        return
-                    end
+                if player ~= nil and not player:HasTag("playerghost") then
+                    local inventory = player.components.inventory
+                    local active_item = inventory ~= nil
+                        and inventory:GetActiveItem()
+                        or nil
+                    local right_action = pc.GetRightMouseAction ~= nil
+                        and pc:GetRightMouseAction()
+                        or nil
 
-                    if YINXUE_SWORD then
-                        local inventory = player.components.inventory
-                        local weapon = inventory ~= nil
-                            and inventory:GetEquippedItem(
-                                GLOBAL.EQUIPSLOTS.HANDS
-                            )
-                            or nil
-                        if weapon ~= nil
-                            and weapon.prefab == "ds_starter_yinxue_sword"
-                        then
-                            local position = GLOBAL.TheInput:GetWorldPosition()
-                            if position ~= nil then
-                                GLOBAL.DSStarterBlink(
-                                    position.x,
-                                    position.z
-                                )
-                            end
+                    -- Only route the click when it is a plain click on empty
+                    -- ground. Clicks on HUD slots, world items/creatures, or
+                    -- while holding an item keep their vanilla behaviour
+                    -- (split, use, attack, deploy, etc.).
+                    if active_item == nil
+                        and right_action == nil
+                        and GLOBAL.TheInput:GetHUDEntityUnderMouse() == nil
+                        and GLOBAL.TheInput:GetWorldEntityUnderMouse() == nil
+                    then
+                        if TELEPORT and TeleportModifierDown() then
+                            GLOBAL.DSStarterTogglePanel()
                             return
+                        end
+
+                        if YINXUE_SWORD then
+                            local weapon = inventory ~= nil
+                                and inventory:GetEquippedItem(
+                                    GLOBAL.EQUIPSLOTS.HANDS
+                                )
+                                or nil
+                            if weapon ~= nil
+                                and weapon.prefab == "ds_starter_yinxue_sword"
+                            then
+                                local position = GLOBAL.TheInput:GetWorldPosition()
+                                if position ~= nil then
+                                    GLOBAL.DSStarterBlink(
+                                        position.x,
+                                        position.z
+                                    )
+                                end
+                                return
+                            end
                         end
                     end
                 end
