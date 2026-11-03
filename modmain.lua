@@ -1510,6 +1510,46 @@ if YINXUE_SWORD then
         return map:IsPassableAtPoint(x, z)
     end
 
+    local function IsWaterAt(x, z)
+        local world = GetTheWorld()
+        local map = world ~= nil and world.Map or nil
+        if map == nil or map.GetTileAtPoint == nil or GLOBAL.GROUND == nil then
+            return false
+        end
+
+        local ok, tile = GLOBAL.pcall(map.GetTileAtPoint, map, x, 0, z)
+        if not ok or tile == nil then
+            return false
+        end
+
+        local shallow = GLOBAL.GROUND.OCEAN_SHALLOW
+        local graveyard = GLOBAL.GROUND.OCEAN_SHIPGRAVEYARD_SHORE
+        if shallow ~= nil and tile >= shallow then
+            -- Hamlet has land tiles above the Shipwrecked ocean range.
+            if graveyard == nil or tile <= graveyard then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function IsOnWater(inst)
+        if inst == nil then
+            return false
+        end
+        if inst.GetIsOnWater ~= nil then
+            local ok, result = GLOBAL.pcall(inst.GetIsOnWater, inst)
+            if ok and result == true then
+                return true
+            end
+        end
+        if inst.Transform ~= nil then
+            local x, _, z = inst.Transform:GetWorldPosition()
+            return IsWaterAt(x, z)
+        end
+        return false
+    end
+
     local function IsUnsafeWorld(player)
         local world = GetTheWorld()
         if world == nil then
@@ -1552,6 +1592,10 @@ if YINXUE_SWORD then
             Say(player, "Cannot teleport here.", "这里不能传送。")
             return
         end
+        if IsOnWater(player) then
+            Say(player, "Cannot blink while in water.", "在水中无法闪现。")
+            return
+        end
 
         local inventory = player.components.inventory
         if inventory == nil then
@@ -1585,6 +1629,10 @@ if YINXUE_SWORD then
 
         if not IsPassable(x, z) then
             Say(player, "Cannot blink there.", "那里无法闪现。")
+            return
+        end
+        if IsWaterAt(x, z) then
+            Say(player, "Cannot blink into water.", "不能闪现到水里。")
             return
         end
 

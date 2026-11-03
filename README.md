@@ -101,7 +101,7 @@
 - **设置**：`Blood-Drinking Sword`
 - **成长**：只计算饮血剑的最后一击；普通怪物 +1 杀，Boss +50 杀；每 25 杀结算一次伤害；单次提升不足 1 点伤害时不增加。
 - **伤害节点**：0 杀 15；100 杀 45；1,000 杀 75；10,000 杀 105；100,000 杀 150。
-- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。
+- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。在水中无法闪现，也不能闪到水面上。
 
 ### 9. 传送
 
@@ -297,7 +297,7 @@
 - **Setting**: `Blood-Drinking Sword`
 - **Growth**: Only the final blow from this sword counts. Normal monsters +1 kill, bosses +50 kills; damage updates every 25 kills; a step worth less than 1 damage is ignored.
 - **Damage breakpoints**: 0 kills 15; 100 kills 45; 1,000 kills 75; 10,000 kills 105; 100,000 kills 150.
-- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking.
+- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking. Blinking is disabled while in water and cannot target water.
 
 ### 9. Teleport Beacons
 
