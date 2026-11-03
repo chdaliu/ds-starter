@@ -71,6 +71,14 @@ local function ShortenName(name)
     return name
 end
 
+local function StyleButton(button)
+    -- The normal button texture is dark, so use white text until the
+    -- highlighted (lighter) texture takes over.
+    button:SetTextColour(1, 1, 1, 1)
+    button:SetTextFocusColour(0, 0, 0, 1)
+    return button
+end
+
 local function MakeButton(text, x, y, fn, scale)
     local button = ImageButton(
         "images/ui.xml",
@@ -79,6 +87,7 @@ local function MakeButton(text, x, y, fn, scale)
         "button_small_disabled.tex"
     )
     button:SetText(text)
+    StyleButton(button)
     button:SetTextSize(16)
     button:SetScale(scale or 0.85, scale or 0.85, 1)
     button:SetPosition(x, y)
