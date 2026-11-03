@@ -34,9 +34,6 @@ local TELEPORT_SHORTCUT = Config("TELEPORT_SHORTCUT", "MOUSE_SHIFT")
 local GLIMMER = Config("GLIMMER", false)
 local INSTANT_FISH = Config("INSTANT_FISH", false)
 local STACK_9999 = Config("STACK_9999", false)
--- Development helper: spawn an altar and hand out upgrade materials.
--- Kept out of the feature blocks below so it can be toggled on its own.
-local TEST_MODE = Config("TEST_MODE", true)
 
 -- Follow the game language. Chinese is detected from the active locale, with
 -- fallbacks for older builds that only expose LanguageTranslator.
@@ -139,10 +136,6 @@ AddPlayerPostInit(function(inst)
         end
         if not INFINITE_BACKPACK then
             flags:ResetBackpackGranted()
-        end
-        if not TEST_MODE then
-            flags:ResetTestAltarGranted()
-            flags:ResetTestMaterialsGranted()
         end
     end)
 end)
@@ -826,96 +819,6 @@ if SACRIFICE_GROWTH or GLIMMER or AUTO_COLLECT then
         )
         altar_recipe.image = "ds_starter_altar.tex"
     end
-end
-
----------------------------------------------------------------------------
--- 3.5 Test loadout (development helper)
----------------------------------------------------------------------------
-if TEST_MODE then
-    -- A compact set that fits in the starting inventory and covers every
-    -- altar effect: purple/red/blue gems and yellow/orange amulets.
-    local TEST_MATERIALS = {
-        { prefab = "purplegem", count = 40 },
-        { prefab = "redgem", count = 20 },
-        { prefab = "bluegem", count = 20 },
-        { prefab = "yellowamulet", count = 3 },
-        { prefab = "orangeamulet", count = 3 },
-    }
-
-    local function IsPassable(x, z)
-        local world = GetTheWorld()
-        local map = world ~= nil and world.Map or nil
-        if map == nil or map.IsPassableAtPoint == nil then
-            return true
-        end
-        local ok, result = GLOBAL.pcall(map.IsPassableAtPoint, map, x, z)
-        if not ok then
-            return true
-        end
-        return result == true
-    end
-
-    local function SpawnTestAltar(player)
-        local px, py, pz = player.Transform:GetWorldPosition()
-        local offsets = {
-            { 2, 0 }, { -2, 0 }, { 0, 2 }, { 0, -2 },
-            { 2, 2 }, { -2, 2 }, { 2, -2 }, { -2, -2 },
-        }
-        for i = 1, #offsets do
-            local x = px + offsets[i][1]
-            local z = pz + offsets[i][2]
-            if IsPassable(x, z) then
-                local altar = GLOBAL.SpawnPrefab("ds_starter_altar")
-                if altar ~= nil then
-                    altar.Transform:SetPosition(x, py, z)
-                    return altar
-                end
-            end
-        end
-        return nil
-    end
-
-    local function GiveTestMaterials(player)
-        local inventory = player.components.inventory
-        if inventory == nil then
-            return false
-        end
-
-        local complete = true
-        for i = 1, #TEST_MATERIALS do
-            local entry = TEST_MATERIALS[i]
-            for _ = 1, entry.count do
-                local item = GLOBAL.SpawnPrefab(entry.prefab)
-                if item == nil
-                    or inventory:GiveItem(item, nil, nil, true) == nil
-                then
-                    complete = false
-                end
-            end
-        end
-        return complete
-    end
-
-    AddPlayerPostInit(function(inst)
-        inst:DoTaskInTime(1, function()
-            local flags = inst.components.ds_starter_flags
-            if flags == nil then
-                return
-            end
-
-            if not flags:HasTestAltarGranted() then
-                if SpawnTestAltar(inst) ~= nil then
-                    flags:SetTestAltarGranted()
-                end
-            end
-
-            if not flags:HasTestMaterialsGranted() then
-                if GiveTestMaterials(inst) then
-                    flags:SetTestMaterialsGranted()
-                end
-            end
-        end)
-    end)
 end
 
 ---------------------------------------------------------------------------

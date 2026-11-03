@@ -4,8 +4,8 @@
 
 > 简体中文 · [English](#english)
 >
-> 项目中文名：**新手套装**。面向《饥荒》单机版的新手/便利模组。所有正式功能默认关闭，按需在游戏内开启；测试模式（开发用）默认开启。
-> A starter / quality-of-life mod for **Don't Starve (single-player)**. Everything is off by default except the development test loadout; enable only what you want.
+> 项目中文名：**新手套装**。面向《饥荒》单机版的新手/便利模组。所有功能默认关闭，按需在游戏内开启。
+> A starter / quality-of-life mod for **Don't Starve (single-player)**. Everything is off by default; enable only what you want.
 
 ---
 
@@ -161,14 +161,6 @@
 - **设置**：`9999 Stack Size`
 - **注意**：默认关闭；关闭后恢复原版堆叠上限。
 
-### 14. 测试模式（开发用）
-
-- **作用**：方便调试献祭祭坛与升级材料，首次进入世界时直接生成一个祭坛，并把一批升级材料放进角色物品栏。
-- **怎么用**：`Test Loadout (Dev)` 默认开启；进入世界后即可看到身边的祭坛和材料。
-- **材料**：紫宝石 ×40、红宝石 ×20、蓝宝石 ×20、魔光护符 ×3、懒人护符 ×3。
-- **是否重复发放**：每个存档只发放一次；关闭再开启 `Test Loadout (Dev)` 可重新发放。
-- **注意**：这是测试功能，正式发布前请关闭。
-
 ## 快捷键总表
 
 | 操作 | 默认快捷键 | 说明 |
@@ -180,11 +172,9 @@
 
 ## 默认设置
 
-**除测试模式外，所有功能默认关闭。** 进入游戏前，在「模组」设置里按需开启：
+**所有功能默认关闭。** 进入游戏前，在「模组」设置里按需开启：
 
 `No Freshness`、`No Durability`、`No Fuel Consumption`、`Health Lock`、`Instant Fishing`、`Sacrifice Growth`、`Glimmer`、`Blood-Drinking Sword`、`Teleport Beacons`、`Five Equipment Slots`、`Infinite Backpack`、`Auto Collect`、`9999 Stack Size`。
-
-`Test Loadout (Dev)` 是开发测试项，默认开启；正式发布前请手动关闭。
 
 `Teleport Shortcut` 不是开关，默认 `Shift + 右键`。
 
@@ -367,14 +357,6 @@
 - **Setting**: `9999 Stack Size`
 - **Notes**: Off by default; turning it off restores vanilla stack limits.
 
-### 14. Test Loadout (Dev)
-
-- **What it does**: Spawns a Sacrificial Altar next to the player and puts a batch of upgrade materials into the player's inventory on the first load, for testing the altar and its bonuses.
-- **How to use**: `Test Loadout (Dev)` is enabled by default; enter a world and look for the altar and materials.
-- **Materials**: 40 purple gems, 20 red gems, 20 blue gems, 3 yellow amulets, 3 orange amulets.
-- **Repeat behaviour**: Granted once per save. Toggling `Test Loadout (Dev)` off and on grants it again.
-- **Notes**: This is a development helper; turn it off before publishing.
-
 ## Shortcut summary
 
 | Action | Default | Notes |
@@ -386,11 +368,9 @@
 
 ## Defaults
 
-**All regular features are off by default.** Enable what you need in the mod settings:
+**All features are off by default.** Enable what you need in the mod settings:
 
 `No Freshness`, `No Durability`, `No Fuel Consumption`, `Health Lock`, `Instant Fishing`, `Sacrifice Growth`, `Glimmer`, `Blood-Drinking Sword`, `Teleport Beacons`, `Five Equipment Slots`, `Infinite Backpack`, `Auto Collect`, `9999 Stack Size`.
-
-`Test Loadout (Dev)` is a development helper and is enabled by default; turn it off before publishing.
 
 `Teleport Shortcut` is not a toggle; its default is `Shift + Right Click`.
 
