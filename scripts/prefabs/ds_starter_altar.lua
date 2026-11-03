@@ -3,8 +3,12 @@
 -- Taking items out reduces the effect; destroying it drops everything.
 
 local assets = {
-    -- Ancient Pseudoscience Station from the ruins.
+    -- Ancient Pseudoscience Station from the ruins: the vanilla bank/anim.
     Asset("ANIM", "anim/crafting_table.zip"),
+    -- Repainted build/atlas shipped by this mod.
+    Asset("ANIM", "anim/ds_starter_altar.zip"),
+    Asset("ATLAS", "images/inventoryimages/ds_starter_altar.xml"),
+    Asset("IMAGE", "images/inventoryimages/ds_starter_altar.tex"),
     -- Only used as a fallback if the custom 8x8 UI is unavailable.
     Asset("ANIM", "anim/ui_chest_3x3.zip"),
 }
@@ -92,7 +96,7 @@ local function fn()
     -- Use the ruins' Ancient Pseudoscience Station model, scaled down to
     -- roughly the footprint of a Science Machine.
     inst.AnimState:SetBank("crafting_table")
-    inst.AnimState:SetBuild("crafting_table")
+    inst.AnimState:SetBuild("ds_altar_build")
     inst.AnimState:PlayAnimation("idle")
     inst.Transform:SetScale(0.55, 0.55, 0.55)
 
@@ -176,7 +180,7 @@ return Prefab("ds_starter_altar", fn, assets),
     MakePlacer(
         "ds_starter_altar_placer",
         "crafting_table",
-        "crafting_table",
+        "ds_altar_build",
         "idle",
         nil,
         nil,

@@ -68,7 +68,7 @@
   3. 需要 **炼金引擎（科学 Tier 2）** 解锁；
   4. 右键打开祭坛，像箱子一样放入/取出物品。
 - **设置**：`Sacrifice Growth`、`Glimmer`、`Auto Collect`
-- **外观**：使用洞穴远古遗迹中的远古伪科学站模型，尺寸缩小到接近科学机器。
+- **外观**：使用洞穴远古遗迹中的远古伪科学站模型，尺寸缩小到接近科学机器，并重绘为暗红石材与金色纹路。
 - **容器**：64 格，固定 8×8，箱子式界面；界面右上角有「关闭」按钮。
 - **堆叠计算**：按实际堆叠数量计算，例如一组 40 个紫宝石会直接计为 40 个。
 - **效果**：
@@ -119,7 +119,7 @@
 - **作用**：在原版 3 格装备栏基础上增加背包槽和项链槽。
 - **怎么用**：开启 `Five Equipment Slots`，正常装备物品即可。
 - **设置**：`Five Equipment Slots`
-- **槽位外观**：背包槽使用淡化的背包图标，项链槽使用淡化的护符图标，均与原版槽位边框保持一致。
+- **槽位外观**：背包槽使用本模组自定义的淡化背包图标，项链槽使用自定义的淡化护符图标，均与原版槽位边框保持一致。
 - **槽位限制**：
   - 背包槽只放背包；
   - 项链槽只放护符；
@@ -274,7 +274,7 @@
   3. Requires an **Alchemy Engine (Science Tier 2)**;
   4. Right-click the altar to open it like a chest and add/remove items.
 - **Settings**: `Sacrifice Growth`, `Glimmer`, `Auto Collect`
-- **Visuals**: Uses the ruins' Ancient Pseudoscience Station model, scaled down to roughly Science Machine size.
+- **Visuals**: Uses the ruins' Ancient Pseudoscience Station model, scaled down to roughly Science Machine size and repainted in dark crimson stone with gold trim.
 - **Container**: 64 slots, fixed 8x8, chest-style UI; a **Close** button is in the top-right corner.
 - **Stack counting**: Counts the actual stack size, so a stack of 40 purple gems counts as 40.
 - **Effects**:
@@ -325,7 +325,7 @@
 - **What it does**: Adds a backpack slot and an amulet slot to the normal equipment bar.
 - **How to use**: Enable `Five Equipment Slots` and equip items normally.
 - **Setting**: `Five Equipment Slots`
-- **Slot visuals**: The backpack slot uses a faded backpack icon and the amulet slot uses a faded amulet icon, both on the standard slot frame.
+- **Slot visuals**: The backpack slot uses the mod's custom faded backpack icon and the amulet slot uses its custom faded amulet icon, both on the standard slot frame.
 - **Slot restrictions**:
   - Backpack slot: backpacks only;
   - Amulet slot: amulets only;

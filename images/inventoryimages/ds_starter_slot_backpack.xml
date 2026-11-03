@@ -1,0 +1,6 @@
+<Atlas>
+    <Texture filename="ds_starter_slot_backpack.tex" />
+    <Elements>
+        <Element name="ds_starter_slot_backpack.tex" u1="0" u2="1" v1="0" v2="1" />
+    </Elements>
+</Atlas>

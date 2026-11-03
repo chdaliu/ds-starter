@@ -67,6 +67,47 @@ local function L(en, zh)
     return en
 end
 
+-- UI atlases used by the five-slot equipment bar are loaded up front, before
+-- the HUD is built.
+Assets = {
+    Asset("ATLAS", "images/inventoryimages/ds_starter_slot_backpack.xml"),
+    Asset("IMAGE", "images/inventoryimages/ds_starter_slot_backpack.tex"),
+    Asset("ATLAS", "images/inventoryimages/ds_starter_slot_amulet.xml"),
+    Asset("IMAGE", "images/inventoryimages/ds_starter_slot_amulet.tex"),
+}
+
+-- Custom item/recipe icons are authored at 128px while vanilla inventory
+-- images are 64px, so scale them down wherever they appear. Keep this
+-- independent of the feature toggles: the backpack can be enabled without
+-- the sword, and the altar recipe can exist on its own.
+local CUSTOM_ICON_PREFABS = {
+    ds_starter_yinxue_sword = true,
+    ds_starter_infinite_backpack = true,
+}
+local CUSTOM_ICON_IMAGES = {
+    ["ds_starter_yinxue_sword.tex"] = true,
+    ["ds_starter_infinite_backpack.tex"] = true,
+    ["ds_starter_altar.tex"] = true,
+}
+
+AddClassPostConstruct("widgets/itemtile", function(self)
+    if self.item ~= nil and CUSTOM_ICON_PREFABS[self.item.prefab] then
+        self:SetBaseScale(0.5)
+    end
+end)
+
+AddClassPostConstruct("widgets/recipetile", function(self)
+    local old_set_visual = self.SetVisual
+    if old_set_visual ~= nil then
+        self.SetVisual = function(tile, atlas, image)
+            old_set_visual(tile, atlas, image)
+            if image ~= nil and CUSTOM_ICON_IMAGES[image] then
+                tile.img:SetScale(0.5, 0.5)
+            end
+        end
+    end
+end)
+
 -- Always add the flags component, even while individual features are off, so
 -- the "sword already granted" flag survives feature toggles.
 AddPlayerPostInit(function(inst)
@@ -780,9 +821,10 @@ if SACRIFICE_GROWTH or GLIMMER or AUTO_COLLECT then
         )
     end
     if altar_recipe ~= nil and GLOBAL.resolvefilepath ~= nil then
-        altar_recipe.atlas =
-            GLOBAL.resolvefilepath("images/inventoryimages.xml")
-        altar_recipe.image = "purplegem.tex"
+        altar_recipe.atlas = GLOBAL.resolvefilepath(
+            "images/inventoryimages/ds_starter_altar.xml"
+        )
+        altar_recipe.image = "ds_starter_altar.tex"
     end
 end
 
@@ -1030,21 +1072,20 @@ if FIVE_SLOTS then
     local WidgetImage = GLOBAL.require("widgets/image")
 
     AddClassPostConstruct("widgets/equipslot", function(self)
-        local icon_name = nil
+        local atlas = nil
+        local image = nil
         if self.equipslot == GLOBAL.EQUIPSLOTS.BACK then
-            icon_name = "backpack.tex"
+            atlas = "images/inventoryimages/ds_starter_slot_backpack.xml"
+            image = "ds_starter_slot_backpack.tex"
         elseif self.equipslot == GLOBAL.EQUIPSLOTS.NECK then
-            icon_name = "amulet.tex"
+            atlas = "images/inventoryimages/ds_starter_slot_amulet.xml"
+            image = "ds_starter_slot_amulet.tex"
         else
             return
         end
 
-        local icon = self:AddChild(WidgetImage(
-            "images/inventoryimages.xml",
-            icon_name
-        ))
-        icon:SetScale(0.8)
-        icon:SetTint(0.45, 0.5, 0.52, 0.7)
+        local icon = self:AddChild(WidgetImage(atlas, image))
+        icon:SetScale(1)
     end)
 
     -- Keep each equipment slot to its own item type.
@@ -1349,29 +1390,6 @@ if YINXUE_SWORD then
     if GLOBAL.Recipes ~= nil then
         GLOBAL.Recipes.ds_starter_yinxue_sword = nil
     end
-
-    -- The custom icon is authored at 128px while vanilla inventory images
-    -- are 64px, so scale our tiles and recipe icons down to fit the slots.
-    AddClassPostConstruct("widgets/itemtile", function(self)
-        if self.item ~= nil
-            and (self.item.prefab == "ds_starter_yinxue_sword"
-                or self.item.prefab == "ds_starter_infinite_backpack")
-        then
-            self:SetBaseScale(0.5)
-        end
-    end)
-
-    AddClassPostConstruct("widgets/recipetile", function(self)
-        local old_set_visual = self.SetVisual
-        if old_set_visual ~= nil then
-            self.SetVisual = function(tile, atlas, image)
-                old_set_visual(tile, atlas, image)
-                if image == "ds_starter_yinxue_sword.tex" then
-                    tile.img:SetScale(0.5, 0.5)
-                end
-            end
-        end
-    end)
 
     local function HasYinxueSword(player)
         local inventory = player.components.inventory

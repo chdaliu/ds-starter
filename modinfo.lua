@@ -26,7 +26,7 @@ description = L(
     "饥荒单机新手模组，支持原版及全部 DLC：关闭新鲜度、关闭耐久度、钓鱼立即上钩、献祭成长、锁血、微光、饮血剑、传送、无限背包、9999 堆叠、自动拾取、五格装备栏。"
 )
 author = "lcd"
-version = "1.5.0"
+version = "1.6.0"
 forumthread = ""
 
 icon_atlas = "modicon.xml"

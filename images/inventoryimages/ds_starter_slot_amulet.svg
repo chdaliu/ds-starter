@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <g opacity="0.62" fill="#1c2127" stroke="#07090c" stroke-width="2" stroke-linejoin="round">
+    <!-- chain -->
+    <path d="M16 12 C20 30 44 30 48 12" fill="none" stroke="#10151a" stroke-width="4" stroke-linecap="round"/>
+    <!-- pendant link -->
+    <rect x="29" y="26" width="6" height="8" rx="2" fill="#2a3038"/>
+    <!-- gem -->
+    <path d="M32 32 L43 44 L32 58 L21 44 Z" fill="#222830"/>
+    <path d="M32 36 L38 44 L32 53 L26 44 Z" fill="#11161b" stroke="none"/>
+  </g>
+</svg>

@@ -1,15 +1,15 @@
 local assets =
 {
     Asset("ANIM", "anim/backpack.zip"),
-    Asset("ANIM", "anim/swap_backpack.zip"),
+    Asset("ANIM", "anim/swap_inf_pack.zip"),
     Asset("ANIM", "anim/ui_backpack_2x4.zip"),
     Asset("ATLAS", "images/inventoryimages/ds_starter_infinite_backpack.xml"),
     Asset("IMAGE", "images/inventoryimages/ds_starter_infinite_backpack.tex"),
 }
 
 local function onequip(inst, owner)
-    owner.AnimState:OverrideSymbol("swap_body", "swap_backpack", "backpack")
-    owner.AnimState:OverrideSymbol("swap_body", "swap_backpack", "swap_body")
+    owner.AnimState:OverrideSymbol("swap_body", "swap_inf_pack", "backpack")
+    owner.AnimState:OverrideSymbol("swap_body", "swap_inf_pack", "swap_body")
 
     -- Let the inventory fall back to this container when all normal slots
     -- are full, so picked-up items go straight into the infinite backpack.
@@ -48,11 +48,8 @@ local function fn(Sim)
     MakeInventoryPhysics(inst)
 
     inst.AnimState:SetBank("backpack1")
-    inst.AnimState:SetBuild("swap_backpack")
+    inst.AnimState:SetBuild("swap_inf_pack")
     inst.AnimState:PlayAnimation("anim")
-    -- Warm leather tint that matches the custom inventory icon.
-    inst.AnimState:SetMultColour(1.0, 0.88, 0.68, 1)
-    inst.AnimState:SetAddColour(0.05, 0.03, 0, 0)
 
     local minimap = inst.entity:AddMiniMapEntity()
     minimap:SetIcon("backpack.png")

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a4a42"/>
+      <stop offset="0.45" stop-color="#5a2320"/>
+      <stop offset="1" stop-color="#2a0b0b"/>
+    </linearGradient>
+    <linearGradient id="stoneDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5c2a26"/>
+      <stop offset="1" stop-color="#1f0707"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff0b0"/>
+      <stop offset="0.5" stop-color="#e8b73f"/>
+      <stop offset="1" stop-color="#8c5a0c"/>
+    </linearGradient>
+    <radialGradient id="gem" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#ffd9d0"/>
+      <stop offset="0.42" stop-color="#e6372c"/>
+      <stop offset="0.82" stop-color="#9a0f12"/>
+      <stop offset="1" stop-color="#4a0406"/>
+    </radialGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+
+  <!-- blood-red aura -->
+  <ellipse cx="64" cy="58" rx="36" ry="42" fill="#ff2b2b" opacity="0.22" filter="url(#glow)"/>
+
+  <!-- stepped base -->
+  <rect x="16" y="108" width="96" height="12" rx="4"
+        fill="url(#stoneDark)" stroke="#140303" stroke-width="3"/>
+  <rect x="24" y="98" width="80" height="12" rx="4"
+        fill="url(#stone)" stroke="#140303" stroke-width="3"/>
+  <rect x="30" y="96" width="68" height="4" rx="2" fill="url(#gold)" opacity="0.85"/>
+
+  <!-- pedestal -->
+  <path d="M36 58 L92 58 L88 98 L40 98 Z"
+        fill="url(#stone)" stroke="#140303" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M42 64 L44 92 M86 64 L84 92 M50 74 L78 74 M48 84 L80 84"
+        fill="none" stroke="#2a0b0b" stroke-width="2" opacity="0.75"/>
+  <rect x="30" y="52" width="68" height="10" rx="3"
+        fill="url(#stoneDark)" stroke="#140303" stroke-width="3"/>
+  <rect x="30" y="52" width="68" height="4" rx="2" fill="url(#gold)" opacity="0.9"/>
+
+  <!-- stone arch -->
+  <rect x="34" y="24" width="12" height="30" rx="3"
+        fill="url(#stone)" stroke="#140303" stroke-width="2.5"/>
+  <rect x="82" y="24" width="12" height="30" rx="3"
+        fill="url(#stone)" stroke="#140303" stroke-width="2.5"/>
+  <path d="M30 24 Q30 16 40 16 L88 16 Q98 16 98 24 L98 30 L30 30 Z"
+        fill="url(#stone)" stroke="#140303" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M32 21 L96 21" stroke="url(#gold)" stroke-width="3" opacity="0.9"/>
+
+  <!-- hanging gem -->
+  <path d="M64 34 L76 48 L64 68 L52 48 Z"
+        fill="url(#gem)" stroke="#3a0406" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M64 38 L70 48 L64 60 L58 48 Z"
+        fill="none" stroke="#ffb0a2" stroke-width="1.4" opacity="0.7"/>
+  <circle cx="60" cy="44" r="2" fill="#ffffff" opacity="0.85"/>
+
+  <!-- gold rune marks -->
+  <path d="M50 64 L54 70 L50 76 M78 64 L74 70 L78 76"
+        fill="none" stroke="url(#gold)" stroke-width="2" stroke-linecap="round"/>
+</svg>

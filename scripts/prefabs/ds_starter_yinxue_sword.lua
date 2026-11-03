@@ -3,7 +3,7 @@
 
 local assets = {
     Asset("ANIM", "anim/nightmaresword.zip"),
-    Asset("ANIM", "anim/swap_nightmaresword.zip"),
+    Asset("ANIM", "anim/swap_blood_drinking.zip"),
     Asset("ATLAS", "images/inventoryimages/ds_starter_yinxue_sword.xml"),
     Asset("IMAGE", "images/inventoryimages/ds_starter_yinxue_sword.tex"),
 }
@@ -11,7 +11,7 @@ local assets = {
 local function onequip(inst, owner)
     owner.AnimState:OverrideSymbol(
         "swap_object",
-        "swap_nightmaresword",
+        "swap_blood_drinking",
         "swap_nightmaresword"
     )
     owner.AnimState:Show("ARM_carry")

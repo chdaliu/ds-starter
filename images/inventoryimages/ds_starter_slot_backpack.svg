@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <g opacity="0.62" fill="#1c2127" stroke="#07090c" stroke-width="2" stroke-linejoin="round">
+    <!-- straps -->
+    <path d="M21 24 C18 12 24 8 30 14" fill="none" stroke="#10151a" stroke-width="6" stroke-linecap="round"/>
+    <path d="M43 24 C46 12 40 8 34 14" fill="none" stroke="#10151a" stroke-width="6" stroke-linecap="round"/>
+    <!-- body -->
+    <rect x="14" y="23" width="36" height="30" rx="8"/>
+    <!-- flap -->
+    <path d="M14 32 Q14 23 24 23 L40 23 Q50 23 50 32 L50 39 Q32 44 14 39 Z" fill="#2a3038"/>
+    <!-- clasp -->
+    <rect x="28" y="33" width="8" height="11" rx="2" fill="#11161b" stroke="none"/>
+  </g>
+</svg>
