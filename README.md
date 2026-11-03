@@ -109,7 +109,7 @@
 - **怎么用**：
   1. 开启 `Teleport Beacons`；
   2. 在**空地**上默认按 **Shift + 右键** 打开/关闭面板；
-  3. 在面板中「添加信标」「改名」「传送」「删除」。
+  3. 在面板中「添加信标」「改名」「上移/下移」「传送」「删除」。
 - **设置**：`Teleport Beacons`、`Teleport Shortcut`
 - **快捷键**：默认 Shift+右键，可改为 Ctrl+右键或 Alt+右键。
 - **注意**：不需要手持饮血剑；每页 8 个信标；新信标必须离已有信标至少 4 单位；洞穴、遗迹、室内、火山不能传送或添加信标。中文信标名可以正常输入和显示。右键点击物品、生物或建筑时不会打开传送面板，物品的右键操作保持原版。
@@ -305,7 +305,7 @@
 - **How to use**:
   1. Enable `Teleport Beacons`;
   2. Press **Shift + Right Click** on **empty ground** to open or close the panel;
-  3. Use Add / Rename / Go / Delete in the panel.
+  3. Use Add / Rename / Move up / Move down / Go / Delete in the panel.
 - **Settings**: `Teleport Beacons`, `Teleport Shortcut`
 - **Shortcut**: Shift+Right Click by default; can be changed to Ctrl+Right Click or Alt+Right Click.
 - **Notes**: No sword required. 8 beacons per page. New beacons need at least 4 units of spacing. Caves, ruins, interiors and the volcano are blocked. Chinese names are supported. Right-clicking items, creatures or structures does not open the panel, so vanilla item right-click actions keep working.
