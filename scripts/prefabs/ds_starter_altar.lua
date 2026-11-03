@@ -9,6 +9,13 @@ local assets = {
     Asset("ANIM", "anim/ds_starter_altar.zip"),
     Asset("ATLAS", "images/inventoryimages/ds_starter_altar.xml"),
     Asset("IMAGE", "images/inventoryimages/ds_starter_altar.tex"),
+    -- Five-slot equipment-bar watermarks. Keep these on an always-loaded
+    -- prefab as well, so the HUD can use them even if modmain Assets are
+    -- reloaded/unloaded during world hops.
+    Asset("ATLAS", "images/inventoryimages/ds_starter_slot_backpack.xml"),
+    Asset("IMAGE", "images/inventoryimages/ds_starter_slot_backpack.tex"),
+    Asset("ATLAS", "images/inventoryimages/ds_starter_slot_amulet.xml"),
+    Asset("IMAGE", "images/inventoryimages/ds_starter_slot_amulet.tex"),
     -- Only used as a fallback if the custom 8x8 UI is unavailable.
     Asset("ANIM", "anim/ui_chest_3x3.zip"),
 }

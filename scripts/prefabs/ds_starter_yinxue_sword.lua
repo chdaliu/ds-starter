@@ -4,6 +4,7 @@
 local assets = {
     Asset("ANIM", "anim/nightmaresword.zip"),
     Asset("ANIM", "anim/swap_blood_drinking.zip"),
+    Asset("ANIM", "anim/ds_blood_sword.zip"),
     Asset("ATLAS", "images/inventoryimages/ds_starter_yinxue_sword.xml"),
     Asset("IMAGE", "images/inventoryimages/ds_starter_yinxue_sword.tex"),
 }
@@ -33,12 +34,8 @@ local function fn()
     MakeInventoryPhysics(inst)
 
     inst.AnimState:SetBank("nightmaresword")
-    inst.AnimState:SetBuild("nightmaresword")
+    inst.AnimState:SetBuild("ds_blood_sword")
     inst.AnimState:PlayAnimation("idle")
-    -- Recolour the shadow sword art into a blood-red blade that matches
-    -- the icon.
-    inst.AnimState:SetMultColour(0.95, 0.16, 0.14, 1)
-    inst.AnimState:SetAddColour(0.16, 0.01, 0.01, 0)
 
     inst:AddTag("sharp")
     inst:AddTag("weapon")
