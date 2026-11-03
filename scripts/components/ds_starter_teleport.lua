@@ -84,6 +84,17 @@ function Teleport:RemoveBeacon(index)
     return true
 end
 
+-- Swap a beacon with its neighbour so the list order can be adjusted.
+function Teleport:MoveBeacon(index, delta)
+    local target = index + delta
+    if self.beacons[index] == nil or self.beacons[target] == nil then
+        return false
+    end
+    self.beacons[index], self.beacons[target] =
+        self.beacons[target], self.beacons[index]
+    return true
+end
+
 function Teleport:GetBeacon(index)
     return self.beacons[index]
 end

@@ -1746,6 +1746,13 @@ if TELEPORT then
         end
     end
 
+    GLOBAL.DSStarterMoveBeacon = function(index, delta)
+        local component = GetTeleportComponent(GetThePlayer())
+        if component ~= nil then
+            component:MoveBeacon(index, delta)
+        end
+    end
+
     GLOBAL.DSStarterTeleportBeacon = function(index)
         local player = GetThePlayer()
         if player == nil or player:HasTag("playerghost") then

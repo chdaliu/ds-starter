@@ -21,7 +21,7 @@ end
 local MAX_ROWS = 8
 local ROW_START_Y = 132
 local ROW_STEP = 36
-local PANEL_WIDTH = 600
+local PANEL_WIDTH = 660
 local PANEL_HEIGHT = 500
 
 -- UTF-8 safe helpers: truncating by bytes can split a Chinese character
@@ -65,8 +65,8 @@ local function Utf8Sub(str, max_chars)
 end
 
 local function ShortenName(name)
-    if Utf8Length(name) > 13 then
-        return Utf8Sub(name, 13) .. "..."
+    if Utf8Length(name) > 10 then
+        return Utf8Sub(name, 10) .. "..."
     end
     return name
 end
@@ -330,7 +330,7 @@ local TeleportPanel = Class(Widget, function(self, player)
 
     self.close = self:AddChild(MakeButton(
         L("Close", "关闭"),
-        246,
+        276,
         202,
         function()
             self:Close()
@@ -358,26 +358,26 @@ local TeleportPanel = Class(Widget, function(self, player)
         end
 
         row.label = self:AddChild(Text(GLOBAL.BUTTONFONT, 17, ""))
-        row.label:SetPosition(-252, y)
-        row.label:SetRegionSize(232, 30)
+        row.label:SetPosition(-170, y)
+        row.label:SetRegionSize(260, 30)
         row.label:SetHAlign(GLOBAL.ANCHOR_LEFT)
         row.label:SetColour(0.92, 0.92, 0.92, 1)
 
         row.rename = self:AddChild(MakeButton(
             L("Rename", "改名"),
-            32,
+            10,
             y,
             function()
                 if row.beacon_index ~= nil then
                     GLOBAL.DSStarterOpenRenameDialog(row.beacon_index)
                 end
             end,
-            0.78
+            0.75
         ))
 
         row.teleport = self:AddChild(MakeButton(
             L("Go", "传送"),
-            122,
+            90,
             y,
             function()
                 if row.beacon_index ~= nil then
@@ -385,12 +385,12 @@ local TeleportPanel = Class(Widget, function(self, player)
                     self:Close()
                 end
             end,
-            0.78
+            0.75
         ))
 
         row.remove = self:AddChild(MakeButton(
             L("Delete", "删除"),
-            212,
+            175,
             y,
             function()
                 if row.beacon_index ~= nil then
@@ -398,8 +398,36 @@ local TeleportPanel = Class(Widget, function(self, player)
                     GLOBAL.DSStarterRequestBeacons()
                 end
             end,
-            0.78
+            0.75
         ))
+
+        row.up = self:AddChild(MakeButton(
+            L("Up", "上"),
+            236,
+            y,
+            function()
+                if row.beacon_index ~= nil then
+                    GLOBAL.DSStarterMoveBeacon(row.beacon_index, -1)
+                    GLOBAL.DSStarterRequestBeacons()
+                end
+            end,
+            0.5
+        ))
+        row.up:SetTextSize(20)
+
+        row.down = self:AddChild(MakeButton(
+            L("Down", "下"),
+            285,
+            y,
+            function()
+                if row.beacon_index ~= nil then
+                    GLOBAL.DSStarterMoveBeacon(row.beacon_index, 1)
+                    GLOBAL.DSStarterRequestBeacons()
+                end
+            end,
+            0.5
+        ))
+        row.down:SetTextSize(20)
 
         self.rows[i] = row
     end
@@ -504,6 +532,14 @@ function TeleportPanel:Refresh()
             row.rename:Show()
             row.teleport:Show()
             row.remove:Show()
+            row.up:Show()
+            row.down:Show()
+            if absolute_index <= 1 then
+                row.up:Hide()
+            end
+            if absolute_index >= count then
+                row.down:Hide()
+            end
         else
             row.beacon_index = nil
             row.bg:Hide()
@@ -511,6 +547,8 @@ function TeleportPanel:Refresh()
             row.rename:Hide()
             row.teleport:Hide()
             row.remove:Hide()
+            row.up:Hide()
+            row.down:Hide()
         end
     end
 

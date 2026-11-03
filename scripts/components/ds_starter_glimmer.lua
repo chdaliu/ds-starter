@@ -25,6 +25,23 @@ function Glimmer:Apply()
         return
     end
 
+    -- Keep the follow/retry task alive even if the glow temporarily cannot
+    -- be spawned (for example during a cave transition).
+    if self.follow_task == nil then
+        self.follow_task = player:DoPeriodicTask(0.1, function()
+            local current = player._ds_starter_glow
+            if current == nil or not current:IsValid() then
+                -- Light entities do not persist across cave/shard
+                -- transitions. Recreate the glow instead of leaving the
+                -- player in the dark.
+                self:Apply()
+                return
+            end
+            local px, py, pz = player.Transform:GetWorldPosition()
+            current.Transform:SetPosition(px, py + 0.9, pz)
+        end)
+    end
+
     local glow = player._ds_starter_glow
     if glow == nil or not glow:IsValid() then
         glow = SpawnPrefab("ds_starter_glow")
@@ -39,17 +56,6 @@ function Glimmer:Apply()
     glow.Transform:SetPosition(x, y + 0.9, z)
     glow.Light:SetRadius(self.radius)
     glow.Light:Enable(true)
-
-    if self.follow_task == nil then
-        self.follow_task = player:DoPeriodicTask(0.1, function()
-            local current = player._ds_starter_glow
-            if current == nil or not current:IsValid() then
-                return
-            end
-            local px, py, pz = player.Transform:GetWorldPosition()
-            current.Transform:SetPosition(px, py + 0.9, pz)
-        end)
-    end
 end
 
 function Glimmer:OnSave()
