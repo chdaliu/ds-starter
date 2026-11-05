@@ -19,10 +19,10 @@ local function GetThePlayer()
 end
 
 local MAX_ROWS = 8
-local ROW_START_Y = 132
-local ROW_STEP = 36
-local PANEL_WIDTH = 660
-local PANEL_HEIGHT = 500
+local ROW_START_Y = 170
+local ROW_STEP = 46
+local PANEL_WIDTH = 860
+local PANEL_HEIGHT = 640
 
 -- UTF-8 safe helpers: truncating by bytes can split a Chinese character
 -- and show garbage in the list.
@@ -65,8 +65,8 @@ local function Utf8Sub(str, max_chars)
 end
 
 local function ShortenName(name)
-    if Utf8Length(name) > 10 then
-        return Utf8Sub(name, 10) .. "..."
+    if Utf8Length(name) > 8 then
+        return Utf8Sub(name, 8) .. "..."
     end
     return name
 end
@@ -88,8 +88,26 @@ local function MakeButton(text, x, y, fn, scale)
     )
     button:SetText(text)
     StyleButton(button)
-    button:SetTextSize(16)
+    button:SetTextSize(32)
     button:SetScale(scale or 0.85, scale or 0.85, 1)
+    button:SetPosition(x, y)
+    button:SetOnClick(fn)
+    return button
+end
+
+-- Long labels such as "Add Beacon" do not fit the small button texture,
+-- so they get the wide variant instead of shrinking the text again.
+local function MakeLongButton(text, x, y, fn, scale)
+    local button = ImageButton(
+        "images/ui.xml",
+        "button_long.tex",
+        "button_long_over.tex",
+        "button_long_disabled.tex"
+    )
+    button:SetText(text)
+    StyleButton(button)
+    button:SetTextSize(32)
+    button:SetScale(scale or 0.9, scale or 0.9, 1)
     button:SetPosition(x, y)
     button:SetOnClick(fn)
     return button
@@ -119,33 +137,33 @@ local RenameDialog = Class(Widget, function(self, player, index, current_name)
     self.index = index
     self.closed = false
 
-    AddPanelBackground(self, 460, 260)
+    AddPanelBackground(self, 520, 280)
 
     local accent = self:AddChild(Image("images/global.xml", "square.tex"))
-    accent:SetSize(430, 3)
-    accent:SetPosition(0, 104)
+    accent:SetSize(490, 3)
+    accent:SetPosition(0, 124)
     accent:SetTint(0.72, 0.55, 0.25, 1)
 
     self.title = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
-        24,
+        32,
         L("Rename Beacon", "重命名信标")
     ))
-    self.title:SetPosition(0, 78)
+    self.title:SetPosition(0, 96)
     self.title:SetColour(1, 0.88, 0.45, 1)
 
     self.edit_bg = self:AddChild(Image("images/global.xml", "square.tex"))
-    self.edit_bg:SetSize(380, 46)
-    self.edit_bg:SetPosition(0, 28)
+    self.edit_bg:SetSize(440, 56)
+    self.edit_bg:SetPosition(0, 42)
     self.edit_bg:SetTint(0.12, 0.11, 0.09, 1)
 
     self.edit = self:AddChild(TextEdit(
         GLOBAL.BUTTONFONT,
-        20,
+        28,
         current_name or ""
     ))
-    self.edit:SetPosition(0, 28)
-    self.edit:SetRegionSize(356, 40)
+    self.edit:SetPosition(0, 42)
+    self.edit:SetRegionSize(416, 50)
     self.edit:SetHAlign(GLOBAL.ANCHOR_LEFT)
     self.edit:SetColour(1, 1, 1, 1)
     self.edit.edit_text_color = { 1, 1, 1, 1 }
@@ -172,29 +190,33 @@ local RenameDialog = Class(Widget, function(self, player, index, current_name)
 
     self.hint = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
-        13,
+        20,
         L("Enter to confirm, Esc to cancel", "Enter 确认，Esc 取消")
     ))
-    self.hint:SetPosition(0, -8)
-    self.hint:SetColour(0.66, 0.66, 0.66, 1)
+    self.hint:SetPosition(0, 0)
+    self.hint:SetColour(0.78, 0.78, 0.78, 1)
 
     self.cancel = self:AddChild(MakeButton(
         L("Cancel", "取消"),
-        -90,
-        -72,
+        -105,
+        -70,
         function()
             self:Close()
-        end
+        end,
+        1
     ))
+    self.cancel:SetTextSize(28)
 
     self.ok = self:AddChild(MakeButton(
         L("OK", "确定"),
-        90,
-        -72,
+        105,
+        -70,
         function()
             self:Confirm()
-        end
+        end,
+        1
     ))
+    self.ok:SetTextSize(28)
 
     self:SetPosition(0, 20)
     player.HUD:AddChild(self)
@@ -306,41 +328,41 @@ local TeleportPanel = Class(Widget, function(self, player)
 
     local accent = self:AddChild(Image("images/global.xml", "square.tex"))
     accent:SetSize(PANEL_WIDTH - 24, 3)
-    accent:SetPosition(0, 224)
+    accent:SetPosition(0, 298)
     accent:SetTint(0.72, 0.55, 0.25, 1)
 
     self.title = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
-        28,
+        42,
         L("Teleport Beacons", "传送信标")
     ))
-    self.title:SetPosition(0, 202)
+    self.title:SetPosition(0, 266)
     self.title:SetColour(1, 0.88, 0.45, 1)
 
     self.subtitle = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
-        13,
+        22,
         L(
             "Shift + Right Click to open · unlimited beacons",
             "Shift + 右键打开 · 信标数量不限"
         )
     ))
-    self.subtitle:SetPosition(0, 176)
-    self.subtitle:SetColour(0.72, 0.72, 0.72, 1)
+    self.subtitle:SetPosition(0, 226)
+    self.subtitle:SetColour(0.82, 0.82, 0.82, 1)
 
     self.close = self:AddChild(MakeButton(
         L("Close", "关闭"),
-        276,
-        202,
+        370,
+        266,
         function()
             self:Close()
         end,
-        0.78
+        0.9
     ))
 
     local header = self:AddChild(Image("images/global.xml", "square.tex"))
     header:SetSize(PANEL_WIDTH - 36, 1)
-    header:SetPosition(0, 158)
+    header:SetPosition(0, 200)
     header:SetTint(0.38, 0.30, 0.20, 0.9)
 
     self.rows = {}
@@ -357,27 +379,27 @@ local TeleportPanel = Class(Widget, function(self, player)
             row.bg:SetTint(0.075, 0.065, 0.055, 0.45)
         end
 
-        row.label = self:AddChild(Text(GLOBAL.BUTTONFONT, 17, ""))
-        row.label:SetPosition(-170, y)
-        row.label:SetRegionSize(260, 30)
+        row.label = self:AddChild(Text(GLOBAL.BUTTONFONT, 28, ""))
+        row.label:SetPosition(-185, y)
+        row.label:SetRegionSize(380, 40)
         row.label:SetHAlign(GLOBAL.ANCHOR_LEFT)
         row.label:SetColour(0.92, 0.92, 0.92, 1)
 
         row.rename = self:AddChild(MakeButton(
-            L("Rename", "改名"),
-            10,
+            L("Name", "改名"),
+            70,
             y,
             function()
                 if row.beacon_index ~= nil then
                     GLOBAL.DSStarterOpenRenameDialog(row.beacon_index)
                 end
             end,
-            0.75
+            0.9
         ))
 
         row.teleport = self:AddChild(MakeButton(
             L("Go", "传送"),
-            90,
+            175,
             y,
             function()
                 if row.beacon_index ~= nil then
@@ -385,12 +407,12 @@ local TeleportPanel = Class(Widget, function(self, player)
                     self:Close()
                 end
             end,
-            0.75
+            0.9
         ))
 
         row.remove = self:AddChild(MakeButton(
-            L("Delete", "删除"),
-            175,
+            L("Del", "删除"),
+            280,
             y,
             function()
                 if row.beacon_index ~= nil then
@@ -398,13 +420,13 @@ local TeleportPanel = Class(Widget, function(self, player)
                     GLOBAL.DSStarterRequestBeacons()
                 end
             end,
-            0.75
+            0.9
         ))
 
         row.up = self:AddChild(MakeButton(
             L("Up", "上"),
-            236,
-            y,
+            378,
+            y + 11,
             function()
                 if row.beacon_index ~= nil then
                     GLOBAL.DSStarterMoveBeacon(row.beacon_index, -1)
@@ -413,12 +435,12 @@ local TeleportPanel = Class(Widget, function(self, player)
             end,
             0.5
         ))
-        row.up:SetTextSize(20)
+        row.up:SetTextSize(42)
 
         row.down = self:AddChild(MakeButton(
             L("Down", "下"),
-            285,
-            y,
+            378,
+            y - 11,
             function()
                 if row.beacon_index ~= nil then
                     GLOBAL.DSStarterMoveBeacon(row.beacon_index, 1)
@@ -427,58 +449,58 @@ local TeleportPanel = Class(Widget, function(self, player)
             end,
             0.5
         ))
-        row.down:SetTextSize(20)
+        row.down:SetTextSize(42)
 
         self.rows[i] = row
     end
 
-    self.add = self:AddChild(MakeButton(
+    self.add = self:AddChild(MakeLongButton(
         L("Add Beacon", "添加信标"),
         0,
-        -164,
+        -207,
         function()
             GLOBAL.DSStarterAddBeacon()
             self.page = 99999
             GLOBAL.DSStarterRequestBeacons()
         end,
-        0.95
+        0.8
     ))
-    self.add:SetTextSize(18)
+    self.add:SetTextSize(34)
 
     self.add_hint = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
-        12,
+        20,
         L("Adds at your current position", "在当前位置添加")
     ))
-    self.add_hint:SetPosition(0, -188)
-    self.add_hint:SetColour(0.66, 0.66, 0.66, 1)
+    self.add_hint:SetPosition(0, -252)
+    self.add_hint:SetColour(0.78, 0.78, 0.78, 1)
 
     self.prev = self:AddChild(MakeButton(
         L("Prev", "上一页"),
-        -120,
-        -220,
+        -150,
+        -290,
         function()
             self:SetPage(self.page - 1)
         end,
-        0.78
+        0.9
     ))
 
     self.next = self:AddChild(MakeButton(
         L("Next", "下一页"),
-        120,
-        -220,
+        150,
+        -290,
         function()
             self:SetPage(self.page + 1)
         end,
-        0.78
+        0.9
     ))
 
     self.page_text = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
-        18,
+        28,
         ""
     ))
-    self.page_text:SetPosition(0, -220)
+    self.page_text:SetPosition(0, -290)
     self.page_text:SetColour(0.9, 0.9, 0.9, 1)
 
     self:Refresh()
