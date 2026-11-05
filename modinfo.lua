@@ -22,8 +22,8 @@ end
 
 name = "新手套装"
 description = L(
-    "A Don't Starve single-player starter mod for the base game and all DLCs: no freshness, no durability, sacrifice growth, health lock, glimmer, the Blood-Drinking Sword, teleport beacons, infinite backpack, 9999 stacking, auto collect, and five equipment slots.",
-    "饥荒单机新手模组，支持原版及全部 DLC：关闭新鲜度、关闭耐久度、钓鱼立即上钩、献祭成长、锁血、微光、饮血剑、传送、无限背包、9999 堆叠、自动拾取、五格装备栏。"
+    "A Don't Starve single-player starter mod for the base game and all DLCs: no freshness, no durability, sacrifice growth, health lock, glimmer, the Blood-Drinking Sword, teleport beacons, infinite backpack, 9999 stacking, auto collect, five equipment slots, and the work queue.",
+    "饥荒单机新手模组，支持原版及全部 DLC：关闭新鲜度、关闭耐久度、钓鱼立即上钩、献祭成长、锁血、微光、饮血剑、传送、无限背包、9999 堆叠、自动拾取、五格装备栏、工作队列。"
 )
 author = "lcd"
 version = "1.6.0"
@@ -226,6 +226,19 @@ configuration_options = {
         hover = L(
             "The player has an innate Lazy Forager effect. Store orange amulets in the altar container to increase the pickup radius from 4 to 10.",
             "玩家自带懒人护符效果。把懒人护符（橙护符）放进祭坛容器，可将拾取范围从 4 提升到 10。"
+        ),
+        options = {
+            { description = OFF, data = false },
+            { description = ON, data = true },
+        },
+        default = false,
+    },
+    {
+        name = "WORK_QUEUE",
+        label = L("Work Queue", "工作队列"),
+        hover = L(
+            "Hold Shift and left double-click a resource, pond, pot, dryer, farm, trap, insect, trader or shop counter to queue it. The queue walks to the nearest visible target, repeats the action and swaps broken tools. Any manual movement, click or control cancels it. Water jobs only start while already on a boat.",
+            "按住 Shift 并左键双击资源、池塘、锅、晾肉架、农场、陷阱、昆虫、NPC 或商店柜台，即可加入工作队列。队列会自动走向视野内最近的目标、重复操作、损坏工具自动更换。任何主动移动、点击或操作都会取消队列。水上任务必须已经在船上才会触发。"
         ),
         options = {
             { description = OFF, data = false },

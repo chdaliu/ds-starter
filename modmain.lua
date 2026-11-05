@@ -27,6 +27,7 @@ local SACRIFICE_GROWTH = Config("SACRIFICE_GROWTH", false)
 local HEALTH_LOCK = Config("HEALTH_LOCK", false)
 local INFINITE_BACKPACK = Config("INFINITE_BACKPACK", false)
 local AUTO_COLLECT = Config("AUTO_COLLECT", false)
+local WORK_QUEUE = Config("WORK_QUEUE", false)
 local FIVE_SLOTS = Config("FIVE_SLOTS", false)
 local YINXUE_SWORD = Config("YINXUE_SWORD", false)
 local TELEPORT = Config("TELEPORT", false)
@@ -1277,6 +1278,315 @@ if AUTO_COLLECT then
             inst:AddComponent("ds_starter_autocollect")
         end
         inst.components.ds_starter_autocollect:Start()
+    end)
+end
+
+---------------------------------------------------------------------------
+-- 6.5 Work queue
+---------------------------------------------------------------------------
+if WORK_QUEUE then
+    GLOBAL.DSStarterL = L
+    modimport("scripts/widgets/ds_starter_workqueue_hud.lua")
+
+    local function DeepCopy(value)
+        if type(value) ~= "table" then
+            return value
+        end
+        local copy = {}
+        for i = 1, #value do
+            copy[i] = value[i]
+        end
+        return copy
+    end
+
+    -- Remember the last input used on each object and persist it with the
+    -- component that owns the memory.
+    local function AddMemorySave(component, key, field)
+        local old_save = component.OnSave
+        component.OnSave = function(self, ...)
+            local data = nil
+            local refs = nil
+            if old_save ~= nil then
+                data, refs = old_save(self, ...)
+            end
+            local value = self.inst[key]
+            if value ~= nil then
+                data = data or {}
+                data[field] = DeepCopy(value)
+            end
+            return data, refs
+        end
+
+        local old_load = component.OnLoad
+        component.OnLoad = function(self, data, ...)
+            local ret1 = nil
+            local ret2 = nil
+            if old_load ~= nil then
+                ret1, ret2 = old_load(self, data, ...)
+            end
+            if data ~= nil and data[field] ~= nil then
+                self.inst[key] = DeepCopy(data[field])
+            end
+            return ret1, ret2
+        end
+    end
+
+    AddComponentPostInit("stewer", function(self)
+        local old_start = self.StartCooking
+        if old_start ~= nil then
+            self.StartCooking = function(component, ...)
+                local container = component.inst.components.container
+                if container ~= nil and container.slots ~= nil then
+                    local recipe = {}
+                    for _, item in pairs(container.slots) do
+                        if item ~= nil then
+                            recipe[#recipe + 1] = item.prefab
+                        end
+                    end
+                    if #recipe > 0 then
+                        component.inst._ds_starter_last_recipe = recipe
+                    end
+                end
+                return old_start(component, ...)
+            end
+        end
+        AddMemorySave(self, "_ds_starter_last_recipe", "ds_starter_last_recipe")
+    end)
+
+    AddComponentPostInit("dryer", function(self)
+        local old_start = self.StartDrying
+        if old_start ~= nil then
+            self.StartDrying = function(component, dryable)
+                local prefab = dryable ~= nil and dryable.prefab or nil
+                local ok = old_start(component, dryable)
+                if ok and prefab ~= nil then
+                    component.inst._ds_starter_last_dry = prefab
+                end
+                return ok
+            end
+        end
+        AddMemorySave(self, "_ds_starter_last_dry", "ds_starter_last_dry")
+    end)
+
+    AddComponentPostInit("grower", function(self)
+        local old_plant = self.PlantItem
+        if old_plant ~= nil then
+            self.PlantItem = function(component, item)
+                local prefab = item ~= nil and item.prefab or nil
+                local ok = old_plant(component, item)
+                if ok and prefab ~= nil then
+                    component.inst._ds_starter_last_seed = prefab
+                end
+                return ok
+            end
+        end
+        local old_fertilize = self.Fertilize
+        if old_fertilize ~= nil then
+            self.Fertilize = function(component, fertilizer)
+                local prefab = fertilizer ~= nil and fertilizer.prefab or nil
+                local ok = old_fertilize(component, fertilizer)
+                if prefab ~= nil then
+                    component.inst._ds_starter_last_fertilizer = prefab
+                end
+                return ok
+            end
+        end
+        AddMemorySave(self, "_ds_starter_last_seed", "ds_starter_last_seed")
+        AddMemorySave(
+            self,
+            "_ds_starter_last_fertilizer",
+            "ds_starter_last_fertilizer"
+        )
+    end)
+
+    AddComponentPostInit("crop", function(self)
+        local old_fertilize = self.Fertilize
+        if old_fertilize ~= nil then
+            self.Fertilize = function(component, fertilizer)
+                local prefab = fertilizer ~= nil and fertilizer.prefab or nil
+                local ok = old_fertilize(component, fertilizer)
+                if ok and prefab ~= nil then
+                    component.inst._ds_starter_last_fertilizer = prefab
+                end
+                return ok
+            end
+        end
+        AddMemorySave(
+            self,
+            "_ds_starter_last_fertilizer",
+            "ds_starter_last_fertilizer"
+        )
+    end)
+
+    AddComponentPostInit("pickable", function(self)
+        local old_fertilize = self.Fertilize
+        if old_fertilize ~= nil then
+            self.Fertilize = function(component, fertilizer)
+                local prefab = fertilizer ~= nil and fertilizer.prefab or nil
+                local ok = old_fertilize(component, fertilizer)
+                if prefab ~= nil then
+                    component.inst._ds_starter_last_fertilizer = prefab
+                end
+                return ok
+            end
+        end
+        AddMemorySave(
+            self,
+            "_ds_starter_last_fertilizer",
+            "ds_starter_last_fertilizer"
+        )
+    end)
+
+    AddComponentPostInit("trader", function(self)
+        local old_accept = self.AcceptGift
+        if old_accept ~= nil then
+            self.AcceptGift = function(component, giver, item)
+                local prefab = item ~= nil and item.prefab or nil
+                local ok = old_accept(component, giver, item)
+                if ok and prefab ~= nil then
+                    component.inst._ds_starter_last_gift = prefab
+                end
+                return ok
+            end
+        end
+        AddMemorySave(self, "_ds_starter_last_gift", "ds_starter_last_gift")
+    end)
+
+    AddPlayerPostInit(function(inst)
+        if inst.components.ds_starter_workqueue == nil then
+            inst:AddComponent("ds_starter_workqueue")
+        end
+        inst.components.ds_starter_workqueue:Start()
+
+        local function EnsureWorkQueueHUD()
+            if inst._ds_starter_workqueue_hud ~= nil then
+                return true
+            end
+            if inst.HUD == nil then
+                return false
+            end
+            local hud = GLOBAL.DSStarterCreateWorkQueueHUD(inst)
+            if hud == nil then
+                return false
+            end
+            inst.HUD:AddChild(hud)
+            inst._ds_starter_workqueue_hud = hud
+            return true
+        end
+
+        inst:DoTaskInTime(1, function()
+            if EnsureWorkQueueHUD() then
+                return
+            end
+            local task = nil
+            task = inst:DoPeriodicTask(2, function()
+                if EnsureWorkQueueHUD() then
+                    task:Cancel()
+                end
+            end)
+        end)
+    end)
+
+    local IGNORED_QUEUE_CONTROLS = {
+        -- Mouse buttons are routed through OnLeftClick/OnRightClick below.
+        [GLOBAL.CONTROL_PRIMARY] = true,
+        [GLOBAL.CONTROL_SECONDARY] = true,
+        -- Camera controls should not interrupt work.
+        [GLOBAL.CONTROL_ZOOM_IN] = true,
+        [GLOBAL.CONTROL_ZOOM_OUT] = true,
+        [GLOBAL.CONTROL_ROTATE_LEFT] = true,
+        [GLOBAL.CONTROL_ROTATE_RIGHT] = true,
+    }
+
+    local function GetQueue(player)
+        return player ~= nil
+            and player.components.ds_starter_workqueue
+            or nil
+    end
+
+    AddComponentPostInit("playercontroller", function(self)
+        local old_left = self.OnLeftClick
+        if old_left ~= nil then
+            self.OnLeftClick = function(pc, down)
+                if down and not IsRenaming() then
+                    local player = pc.inst
+                    local queue = GetQueue(player)
+                    if queue ~= nil then
+                        local target = GLOBAL.TheInput:GetWorldEntityUnderMouse()
+                        -- NPCs behind a shop fence/desk are sometimes covered
+                        -- by the fence entity; fall back to any trader or
+                        -- shop counter under the mouse.
+                        if target == nil
+                            or target.components == nil
+                            or (target.components.trader == nil
+                                and target.components.shopped == nil)
+                        then
+                            local all = GLOBAL.TheInput
+                                :GetAllEntitiesUnderMouse()
+                            for _, ent in pairs(all or {}) do
+                                if ent.components ~= nil
+                                    and (ent.components.trader ~= nil
+                                        or ent.components.shopped ~= nil)
+                                then
+                                    target = ent
+                                    break
+                                end
+                            end
+                        end
+                        local shift = GLOBAL.TheInput:IsKeyDown(
+                            GLOBAL.KEY_SHIFT
+                        )
+                        if shift
+                            and target ~= nil
+                            and GLOBAL.TheInput:GetHUDEntityUnderMouse() == nil
+                            and queue:Classify(target) ~= nil
+                        then
+                            -- Do not cancel here: shift double-click is the
+                            -- queue-add command.  Enqueue appends to the
+                            -- existing queue.
+                            if queue:NoteClick(target) then
+                                queue:Enqueue(target)
+                            end
+                            -- Swallow the click: the double-click is the
+                            -- command, not a vanilla action.
+                            return true
+                        end
+
+                        if queue:IsRunning() then
+                            queue:CancelQueue(true)
+                        end
+                        queue.last_click_target = nil
+                    end
+                end
+                return old_left(pc, down)
+            end
+        end
+
+        local old_right = self.OnRightClick
+        if old_right ~= nil then
+            self.OnRightClick = function(pc, down)
+                local queue = GetQueue(pc.inst)
+                if down and queue ~= nil and queue:IsRunning() then
+                    queue:CancelQueue(true)
+                end
+                return old_right(pc, down)
+            end
+        end
+
+        local old_control = self.OnControl
+        if old_control ~= nil then
+            self.OnControl = function(pc, control, down)
+                local queue = GetQueue(pc.inst)
+                if down
+                    and queue ~= nil
+                    and queue:IsRunning()
+                    and not IGNORED_QUEUE_CONTROLS[control]
+                then
+                    queue:CancelQueue(true)
+                end
+                return old_control(pc, control, down)
+            end
+        end
     end)
 end
 

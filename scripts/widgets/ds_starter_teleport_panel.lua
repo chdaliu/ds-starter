@@ -588,11 +588,28 @@ function TeleportPanel:Open()
     self:Show()
     GLOBAL.DSStarterRequestBeacons()
     self:Refresh()
+
+    -- Freeze the world while the panel is open.  Only unpause on close if
+    -- this panel was the one that paused the game.
+    if not self.paused_by_panel
+        and GLOBAL.SetPause ~= nil
+        and (GLOBAL.IsPaused == nil or not GLOBAL.IsPaused())
+    then
+        GLOBAL.SetPause(true, "ds_starter_teleport")
+        self.paused_by_panel = true
+    end
 end
 
 function TeleportPanel:Close()
     self.isopen = false
     self:Hide()
+
+    if self.paused_by_panel then
+        self.paused_by_panel = false
+        if GLOBAL.SetPause ~= nil then
+            GLOBAL.SetPause(false, "ds_starter_teleport")
+        end
+    end
 end
 
 function TeleportPanel:Toggle()

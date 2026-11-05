@@ -112,6 +112,7 @@
   3. 在面板中「添加信标」「改名」「上移/下移」「传送」「删除」。
 - **设置**：`Teleport Beacons`、`Teleport Shortcut`
 - **快捷键**：默认 Shift+右键，可改为 Ctrl+右键或 Alt+右键。
+- **暂停**：面板打开时会暂停游戏，关闭面板后恢复正常速度。
 - **注意**：不需要手持饮血剑；每页 8 个信标；新信标必须离已有信标至少 4 单位；洞穴、遗迹、室内、火山不能传送或添加信标。中文信标名可以正常输入和显示。右键点击物品、生物或建筑时不会打开传送面板，物品的右键操作保持原版。
 
 ### 10. 五格装备栏
@@ -161,6 +162,37 @@
 - **设置**：`9999 Stack Size`
 - **注意**：默认关闭；关闭后恢复原版堆叠上限。
 
+### 14. 工作队列
+
+- **作用**：按住 Shift 并左键双击目标，自动连续工作，直到目标完成或没有可做的目标。
+- **怎么用**：
+  1. 开启 `Work Queue`；
+  2. 按住 **Shift**，左键双击要工作的目标；
+  3. 队列会自动走向视野内最近的目标并执行。
+- **支持的目标**：
+  - 砍树、挖矿、锤击、挖掘
+  - 采摘、收获
+  - 普通草直接用手采摘；高草优先用剪刀，其次砍刀/黄金砍刀；芦苇可在船上采集
+  - 翻石头、海贝石：先采集，不会自动接着挖矿
+  - 池塘钓鱼、船上钓鱼/浮木
+  - 烹饪锅（使用该锅上次配方）
+  - 陷阱、捕虫
+  - 晾肉架（只使用该架上次材料）
+  - 农场种植（只使用该地块上次种子）、施肥（只使用上次肥料）
+  - NPC 给予/交易（使用当前拿起的物品；没有拿起时使用上次给过的物品）
+  - Hamlet 商店柜台（购买后等待补货，补货后继续买）
+  - 已在船上时自动开船前往水上目标
+- **规则**：
+  - 所有目标按当前位置全局最近优先重排；
+  - 工具损坏会自动换下一把，全部用完才停止；
+  - 高草会优先使用手里的剪刀/砍刀，不会自动挖草根；翻石头/海贝石采集后也不会自动挖矿，需要再次双击；
+  - 搜索范围约为两屏，会继续处理屏幕外的同类目标；
+  - 目标没有上次配方/材料/种子/物品时不会操作；
+  - 玩家任何主动移动、点击、使用物品、打开界面、攻击或传送都会立即退出队列；
+  - 水上任务必须已经坐在船上才会触发，不会自动上船。
+- **设置**：`Work Queue`
+- **注意**：默认关闭。队列不存档，退出重进会清空；锅/晾肉架/农场/NPC 的“上次使用记录”会保存。
+
 ## 快捷键总表
 
 | 操作 | 默认快捷键 | 说明 |
@@ -169,12 +201,13 @@
 | 打开传送面板 | Shift + 右键空地 | 可在设置中改为 Ctrl/Alt + 右键；物品右键不受影响 |
 | 打开无限背包 | 右键点击已装备的背包图标 | 背包默认关闭 |
 | 打开祭坛容器 | 右键祭坛 | 放入/取出宝石、护符 |
+| 工作队列 | Shift + 左键双击 | 对目标连续工作；任何主动操作都会取消 |
 
 ## 默认设置
 
 **所有功能默认关闭。** 进入游戏前，在「模组」设置里按需开启：
 
-`No Freshness`、`No Durability`、`No Fuel Consumption`、`Health Lock`、`Instant Fishing`、`Sacrifice Growth`、`Glimmer`、`Blood-Drinking Sword`、`Teleport Beacons`、`Five Equipment Slots`、`Infinite Backpack`、`Auto Collect`、`9999 Stack Size`。
+`No Freshness`、`No Durability`、`No Fuel Consumption`、`Health Lock`、`Instant Fishing`、`Sacrifice Growth`、`Glimmer`、`Blood-Drinking Sword`、`Teleport Beacons`、`Five Equipment Slots`、`Infinite Backpack`、`Auto Collect`、`9999 Stack Size`、`Work Queue`。
 
 `Teleport Shortcut` 不是开关，默认 `Shift + 右键`。
 
@@ -357,20 +390,52 @@
 - **Setting**: `9999 Stack Size`
 - **Notes**: Off by default; turning it off restores vanilla stack limits.
 
+### 14. Work Queue
+
+- **What it does**: Hold Shift and left double-click a target to keep working automatically until it is done or nothing valid is left.
+- **How to use**:
+  1. Enable `Work Queue`;
+  2. Hold **Shift** and left double-click the target;
+  3. The queue walks to the nearest visible target and repeats the action.
+- **Supported targets**:
+  - chop, mine, hammer, dig
+  - pick, harvest
+  - normal grass is picked by hand; tall grass prefers shears, then machete/golden machete; reeds can be picked from a boat
+  - flippable and limpet rocks: harvest first, never auto-mine afterwards
+  - pond fishing, boat fishing/flotsam
+  - crock pot (uses that pot's last recipe)
+  - traps, bug net
+  - dryer (only the dryer's last material)
+  - farm planting (only that plot's last seed), fertilizing (only the last fertilizer)
+  - trading/giving (uses the item currently held; otherwise reuses the last item given to that NPC)
+  - Hamlet shop counters (wait for restock and keep buying)
+  - auto-sail to visible water targets while already on a boat
+- **Rules**:
+  - All targets are re-sorted globally by distance from the player;
+  - Broken tools are replaced automatically; the queue stops only when no usable tool is left;
+  - Tall grass prefers the shears/machete in hand; grass roots are not auto-dug, and flippable/limpet rocks are not auto-mined after harvesting - double-click again to dig/mine;
+  - The search radius is about two screens, so off-screen matching targets continue to be processed;
+  - Targets without a remembered recipe/material/seed/item are skipped;
+  - Any manual movement, click, item use, UI open, attack or teleport cancels the queue;
+  - Water jobs only start while already on a boat; the queue never boards a boat automatically.
+- **Setting**: `Work Queue`
+- **Notes**: Off by default. The queue itself is not saved and clears on reload; remembered inputs for pots, dryers, farms and NPCs are saved.
+
 ## Shortcut summary
 
 | Action | Default | Notes |
 |---|---|---|
 | Blood-Drinking Sword blink | Right Click on empty ground | Sword must be equipped; max 20 units, 1 second cooldown; item/creature/structure right-clicks keep vanilla behaviour |
-| Open teleport panel | Shift + Right Click on empty ground | Can be changed to Ctrl/Alt + Right Click; item right-clicks are unaffected |
+| Open teleport panel | Shift + Right Click on empty ground | Can be changed to Ctrl/Alt + Right Click; pauses the game while open; item right-clicks are unaffected |
 | Open infinite backpack | Right-click the equipped backpack icon | Starts closed |
 | Open altar container | Right-click the altar | Add/remove gems and amulets |
+| Work queue | Shift + Left double-click | Keep working on the target; any manual action cancels |
 
 ## Defaults
 
 **All features are off by default.** Enable what you need in the mod settings:
 
-`No Freshness`, `No Durability`, `No Fuel Consumption`, `Health Lock`, `Instant Fishing`, `Sacrifice Growth`, `Glimmer`, `Blood-Drinking Sword`, `Teleport Beacons`, `Five Equipment Slots`, `Infinite Backpack`, `Auto Collect`, `9999 Stack Size`.
+`No Freshness`, `No Durability`, `No Fuel Consumption`, `Health Lock`, `Instant Fishing`, `Sacrifice Growth`, `Glimmer`, `Blood-Drinking Sword`, `Teleport Beacons`, `Five Equipment Slots`, `Infinite Backpack`, `Auto Collect`, `9999 Stack Size`, `Work Queue`.
 
 `Teleport Shortcut` is not a toggle; its default is `Shift + Right Click`.
 
