@@ -138,6 +138,7 @@
 - **设置**：`Infinite Backpack`
 - **容量**：每页最多 120 格，最多 9 页，共 **1080 格**。
 - **分页**：当前页物品超过一半时自动开放下一页；第 9 页满后不再增加。
+- **整理按钮**：底部换页栏左侧有「整理」按钮，一键按 **工具 → 食物 → 其他物品** 的优先级排序，并回到第一页。
 - **关闭按钮**：底部换页栏右侧有「关闭」按钮。
 - **其他**：主物品栏满后，拾取物会直接进入无限背包；背包里已有同类未满堆叠时优先堆入背包。
 - **世界跳转过滤**：开启无限背包后，跳转世界时会自动过滤传送机零件等世界专属物品；眼骨、Abigail 的花、Lucy、占卜棒等个人物品不受影响。
@@ -170,7 +171,8 @@
   2. 按住 **Shift**，左键双击要工作的目标；
   3. 队列会自动走向视野内最近的目标并执行。
 - **支持的目标**：
-  - 砍树、挖矿、锤击、挖掘
+  - 砍树、挖矿、挖掘
+  - 锤击：仅 Hamlet 的易碎瓦罐和海滩上的沉船遗物箱（板条箱）；其他建筑不会自动锤击
   - 采摘、收获
   - 普通草直接用手采摘；高草优先用剪刀，其次砍刀/黄金砍刀；芦苇可在船上采集
   - 翻石头、海贝石：先采集，不会自动接着挖矿
@@ -366,6 +368,7 @@
 - **Setting**: `Infinite Backpack`
 - **Capacity**: Up to 120 slots per page, 9 pages, **1,080 slots** total.
 - **Pages**: The next page unlocks when the current last page is more than half full; page 9 is the maximum.
+- **Sort button**: The **Sort** button on the left of the paging bar groups tools first, then food, then other items, and returns to page 1.
 - **Close button**: A **Close** button is on the right side of the bottom paging bar.
 - **Other**: When the main inventory is full, pickups go into the backpack; unfinished stacks already in the backpack are filled first.
 - **World hop filter**: While the infinite backpack is enabled, Teleportato parts and similar world-progression items are filtered out on a world hop. Personal items such as the eyebone, Abigail's Flower, Lucy and the Divining Rod are kept.
@@ -398,7 +401,8 @@
   2. Hold **Shift** and left double-click the target;
   3. The queue walks to the nearest visible target and repeats the action.
 - **Supported targets**:
-  - chop, mine, hammer, dig
+  - chop, mine, dig
+  - hammer: only Hamlet's smashing pot and the Shipwrecked beach crate (shipwreck relic crate); other structures are never auto-hammered
   - pick, harvest
   - normal grass is picked by hand; tall grass prefers shears, then machete/golden machete; reeds can be picked from a boat
   - flippable and limpet rocks: harvest first, never auto-mine afterwards

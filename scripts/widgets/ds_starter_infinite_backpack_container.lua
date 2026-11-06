@@ -34,6 +34,7 @@ local IS_ZH = IsChinese()
 local PAGE_FORMAT = IS_ZH and "第 %d/%d 页" or "Page %d/%d"
 local PREV_TEXT = IS_ZH and "上一页" or "Prev"
 local NEXT_TEXT = IS_ZH and "下一页" or "Next"
+local SORT_TEXT = IS_ZH and "整理" or "Sort"
 local CLOSE_TEXT = IS_ZH and "关闭" or "Close"
 
 -- Work out a grid that fits above the main inventory bar. The number of
@@ -230,6 +231,87 @@ local function SetPage(self, page)
     RefreshPage(self)
 end
 
+-- Tools come first, then food, then everything else. The original slot is a
+-- tie-breaker so the sort is stable for items in the same category.
+local SORT_TOOL = 1
+local SORT_FOOD = 2
+local SORT_OTHER = 3
+
+local function GetSortCategory(item)
+    if item == nil then
+        return SORT_OTHER
+    end
+    local components = item.components
+    if components ~= nil
+        and (components.tool ~= nil or components.fishingrod ~= nil)
+    then
+        return SORT_TOOL
+    end
+    if components ~= nil and components.edible ~= nil then
+        return SORT_FOOD
+    end
+    return SORT_OTHER
+end
+
+local function GetStackSize(item)
+    local stackable = item ~= nil
+        and item.components ~= nil
+        and item.components.stackable
+        or nil
+    if stackable ~= nil and stackable.StackSize ~= nil then
+        return stackable:StackSize()
+    end
+    return 1
+end
+
+local function SortContainerItems(component)
+    local entries = {}
+    for slot = 1, component.numslots or 0 do
+        local item = component.slots ~= nil and component.slots[slot] or nil
+        if item ~= nil then
+            entries[#entries + 1] = {
+                item = item,
+                slot = slot,
+                category = GetSortCategory(item),
+                name = item.prefab or "",
+                stack = GetStackSize(item),
+            }
+        end
+    end
+
+    table.sort(entries, function(a, b)
+        if a.category ~= b.category then
+            return a.category < b.category
+        end
+        if a.name ~= b.name then
+            return a.name < b.name
+        end
+        if a.stack ~= b.stack then
+            return a.stack > b.stack
+        end
+        return a.slot < b.slot
+    end)
+
+    -- Move the sorted items back without dropping/re-adding them: they stay
+    -- owned by this container, and only their slot numbers change.
+    for slot = 1, component.numslots or 0 do
+        component.slots[slot] = nil
+    end
+    for index, entry in ipairs(entries) do
+        component.slots[index] = entry.item
+    end
+    return #entries
+end
+
+local function SortContainer(self)
+    local component = GetContainerComponent(self)
+    if component == nil then
+        return
+    end
+    SortContainerItems(component)
+    SetPage(self, 1)
+end
+
 local function OpenInfiniteBackpack(self, container, doer)
     self:Close()
 
@@ -329,6 +411,21 @@ local function OpenInfiniteBackpack(self, container, doer)
         end
     end
 
+    local sort = self:AddChild(ImageButton(
+        "images/ui.xml",
+        "button_small.tex",
+        "button_small_over.tex",
+        "button_small_disabled.tex"
+    ))
+    sort:SetText(SORT_TEXT)
+    sort:SetTextSize(20)
+    sort:SetTextColour(1, 1, 1, 1)
+    sort:SetTextFocusColour(0, 0, 0, 1)
+    sort:SetPosition(-240, layout.button_y, 0)
+    sort:SetOnClick(function()
+        SortContainer(self)
+    end)
+
     local prev = self:AddChild(ImageButton(
         "images/ui.xml",
         "button_small.tex",
@@ -376,7 +473,7 @@ local function OpenInfiniteBackpack(self, container, doer)
         end)
     end)
 
-    self.page_buttons = { prev, next, close }
+    self.page_buttons = { sort, prev, next, close }
     self.page_text = self:AddChild(Text(
         GLOBAL.BUTTONFONT,
         20,

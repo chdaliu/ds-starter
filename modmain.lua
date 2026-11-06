@@ -1832,13 +1832,35 @@ if YINXUE_SWORD then
             return false
         end
 
-        local shallow = GLOBAL.GROUND.OCEAN_SHALLOW
-        local graveyard = GLOBAL.GROUND.OCEAN_SHIPGRAVEYARD_SHORE
-        if shallow ~= nil and tile >= shallow then
-            -- Hamlet has land tiles above the Shipwrecked ocean range.
-            if graveyard == nil or tile <= graveyard then
+        -- Map:IsWater knows every water tile registered by the active DLC,
+        -- including Hamlet's lily pond and Shipwrecked's mangrove.
+        if map.IsWater ~= nil then
+            local ok_water, is_water = GLOBAL.pcall(map.IsWater, map, tile)
+            if ok_water and is_water == true then
                 return true
             end
+        end
+
+        -- Fallback for builds without Map:IsWater. Keep this as explicit tile
+        -- checks: Hamlet's lily pond is above the Shipwrecked ocean range,
+        -- while other Hamlet tiles above that range are land.
+        local shallow = GLOBAL.GROUND.OCEAN_SHALLOW
+        local graveyard = GLOBAL.GROUND.OCEAN_SHIPGRAVEYARD_SHORE
+        if shallow ~= nil
+            and tile >= shallow
+            and (graveyard == nil or tile <= graveyard)
+        then
+            return true
+        end
+        if GLOBAL.GROUND.LILYPOND ~= nil
+            and tile == GLOBAL.GROUND.LILYPOND
+        then
+            return true
+        end
+        if GLOBAL.GROUND.MANGROVE ~= nil
+            and tile == GLOBAL.GROUND.MANGROVE
+        then
+            return true
         end
         return false
     end

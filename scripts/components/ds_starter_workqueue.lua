@@ -115,6 +115,24 @@ local function ToolCanDo(tool, action)
         and tool.components.tool:CanDoAction(action)
 end
 
+-- Only loot-bearing hammerables are safe to repeat automatically. Other
+-- hammerable structures (walls, houses, chests, campfires, ...) must be
+-- handled with a normal click so the queue cannot demolish them by accident.
+local QUEUE_HAMMER_PREFABS = {
+    smashingpot = true, -- Hamlet pig ruins pot
+    crate = true,       -- Shipwrecked crate washed up on the beach
+}
+
+local function IsAllowedHammerTarget(target)
+    return target ~= nil
+        and target.prefab ~= nil
+        and QUEUE_HAMMER_PREFABS[target.prefab] == true
+end
+
+local function IsAllowedWorkAction(target, action)
+    return action ~= ACTIONS.HAMMER or IsAllowedHammerTarget(target)
+end
+
 local function HasRoomForItem(player, item)
     local inventory = player.components.inventory
     if inventory == nil then
@@ -385,6 +403,9 @@ function WorkQueue:Classify(target)
         local action = target.components.workable:GetWorkAction()
         if action == ACTIONS.NET then
             return "net"
+        end
+        if not IsAllowedWorkAction(target, action) then
+            return nil
         end
         return "work"
     end
@@ -738,6 +759,12 @@ function WorkQueue:MakeJob(kind, target, extra)
             return nil
         end
         local action = workable:GetWorkAction() or ACTIONS.CHOP
+        if not IsAllowedWorkAction(target, action) then
+            if not extra.silent then
+                self:Say("This structure cannot be hammered by the queue.", "工作队列不能锤击这个建筑。")
+            end
+            return nil
+        end
         if self:FindTool(action) == nil then
             if not extra.silent then
                 self:Say("No usable tool for this job.", "没有可用的工具。")
@@ -1262,6 +1289,11 @@ function WorkQueue:ExecuteWork(job)
     local action = workable:GetWorkAction() or job.action
     if action == ACTIONS.NET then
         job.kind = "net"
+    end
+    if not IsAllowedWorkAction(target, action) then
+        self:Say("This structure cannot be hammered by the queue.", "工作队列不能锤击这个建筑。")
+        self:FinishJob("invalid")
+        return
     end
     if not self:ApproachForAction(job) then
         return
