@@ -231,26 +231,86 @@ local function SetPage(self, page)
     RefreshPage(self)
 end
 
--- Tools come first, then food, then everything else. The original slot is a
--- tie-breaker so the sort is stable for items in the same category.
+-- Tools (including weapons, armor, hats, bug repellent, boats, sails, razors
+-- and traps) come first, then food, coins, seeds/fertilizer, materials, and
+-- finally low-value trinkets. Edible crafting materials such as alloy, gears,
+-- rocks, twigs and pigskin stay in the material group instead of food.
 local SORT_TOOL = 1
 local SORT_FOOD = 2
-local SORT_OTHER = 3
+local SORT_COIN = 3
+local SORT_SEED = 4
+local SORT_MATERIAL = 5
+local SORT_TRINKET = 6
+
+-- These "edible" types are actually crafting materials that some characters
+-- can nibble on (rocks, twigs, gears, alloy, pigskin, ...). They must not be
+-- mixed into the food group.
+local NON_FOOD_EDIBLE_TYPES = {
+    ELEMENTAL = true,
+    GEARS = true,
+    GOLDDUST = true,
+    WOOD = true,
+    ROUGHAGE = true,
+    BONE = true,
+    HORRIBLE = true,
+    GENERIC = true,
+}
 
 local function GetSortCategory(item)
     if item == nil then
-        return SORT_OTHER
+        return SORT_MATERIAL
     end
     local components = item.components
+    local has_tag = item.HasTag ~= nil
     if components ~= nil
-        and (components.tool ~= nil or components.fishingrod ~= nil)
+        and (components.tool ~= nil
+            or components.fishingrod ~= nil
+            or components.weapon ~= nil
+            or components.armor ~= nil
+            or components.shaver ~= nil
+            or components.trap ~= nil)
     then
         return SORT_TOOL
     end
-    if components ~= nil and components.edible ~= nil then
+    if has_tag
+        and (item:HasTag("hat")
+            or item:HasTag("bugrepellent")
+            or item:HasTag("boat")
+            or item:HasTag("sail")
+            or item:HasTag("trap"))
+    then
+        return SORT_TOOL
+    end
+    if components ~= nil
+        and components.equippable ~= nil
+        and EQUIPSLOTS ~= nil
+        and components.equippable.equipslot == EQUIPSLOTS.HEAD
+    then
+        return SORT_TOOL
+    end
+    if components ~= nil
+        and (components.currency ~= nil
+            or (has_tag and item:HasTag("oinc")))
+    then
+        return SORT_COIN
+    end
+    local edible = components ~= nil and components.edible or nil
+    if components ~= nil
+        and (components.plantable ~= nil
+            or components.fertilizer ~= nil
+            or (edible ~= nil and edible.foodtype == "SEEDS"))
+    then
+        return SORT_SEED
+    end
+    if has_tag and item:HasTag("trinket") then
+        return SORT_TRINKET
+    end
+    if edible ~= nil
+        and not NON_FOOD_EDIBLE_TYPES[edible.foodtype or "GENERIC"]
+    then
         return SORT_FOOD
     end
-    return SORT_OTHER
+    return SORT_MATERIAL
 end
 
 local function GetStackSize(item)
@@ -264,9 +324,9 @@ local function GetStackSize(item)
     return 1
 end
 
-local function SortContainerItems(component)
+local function SortContainerItems(component, first_slot, last_slot)
     local entries = {}
-    for slot = 1, component.numslots or 0 do
+    for slot = first_slot, last_slot do
         local item = component.slots ~= nil and component.slots[slot] or nil
         if item ~= nil then
             entries[#entries + 1] = {
@@ -286,19 +346,22 @@ local function SortContainerItems(component)
         if a.name ~= b.name then
             return a.name < b.name
         end
-        if a.stack ~= b.stack then
+        -- Food stays in a stable name order, independent of stack size and
+        -- freshness (including when No Freshness is enabled).
+        if a.category ~= SORT_FOOD and a.stack ~= b.stack then
             return a.stack > b.stack
         end
         return a.slot < b.slot
     end)
 
     -- Move the sorted items back without dropping/re-adding them: they stay
-    -- owned by this container, and only their slot numbers change.
-    for slot = 1, component.numslots or 0 do
+    -- owned by this container, and only their slot numbers change. Items never
+    -- cross the page boundary, so every page keeps its own contents.
+    for slot = first_slot, last_slot do
         component.slots[slot] = nil
     end
     for index, entry in ipairs(entries) do
-        component.slots[index] = entry.item
+        component.slots[first_slot + index - 1] = entry.item
     end
     return #entries
 end
@@ -308,8 +371,12 @@ local function SortContainer(self)
     if component == nil then
         return
     end
-    SortContainerItems(component)
-    SetPage(self, 1)
+
+    local per_page = self.items_per_page or MAX_PER_PAGE
+    local page = self.page or 1
+    local first_slot = (page - 1) * per_page + 1
+    SortContainerItems(component, first_slot, first_slot + per_page - 1)
+    SetPage(self, page)
 end
 
 local function OpenInfiniteBackpack(self, container, doer)

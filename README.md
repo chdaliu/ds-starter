@@ -139,7 +139,7 @@
 - **设置**：`Infinite Backpack`
 - **容量**：每页最多 120 格，最多 9 页，共 **1080 格**。
 - **分页**：当前页物品超过一半时自动开放下一页；第 9 页满后不再增加。
-- **整理按钮**：底部换页栏左侧有「整理」按钮，一键按 **工具 → 食物 → 其他物品** 的优先级排序，并回到第一页。
+- **整理按钮**：底部换页栏左侧有「整理」按钮，一键按 **工具/武器/防具/帽子/驱虫剂/船/船帆/剃刀/陷阱 → 食物 → 金币 → 种子/肥料 → 材料 → 无用饰品** 的优先级整理当前页。每页单独排序，不会移动或刷新其他页。食物按名称稳定排序，不受堆叠数量或保鲜状态影响；合金、齿轮、石头、树枝、猪皮等可食用材料仍归入材料。
 - **关闭按钮**：底部换页栏右侧有「关闭」按钮。
 - **其他**：主物品栏满后，拾取物会直接进入无限背包；背包里已有同类未满堆叠时优先堆入背包。
 - **世界跳转过滤**：开启无限背包后，跳转世界时会自动过滤传送机零件等世界专属物品；眼骨、Abigail 的花、Lucy、占卜棒等个人物品不受影响。
@@ -370,7 +370,7 @@
 - **Setting**: `Infinite Backpack`
 - **Capacity**: Up to 120 slots per page, 9 pages, **1,080 slots** total.
 - **Pages**: The next page unlocks when the current last page is more than half full; page 9 is the maximum.
-- **Sort button**: The **Sort** button on the left of the paging bar groups tools first, then food, then other items, and returns to page 1.
+- **Sort button**: The **Sort** button on the left of the paging bar orders the current page as tools/weapons/armor/hats/bug repellent/boats/sails/razors/traps, food, coins, seeds/fertilizer, materials, then low-value trinkets. Each page is sorted separately, and other pages are not moved or refreshed. Food keeps a stable name order independent of stack size and freshness; edible crafting materials such as alloy, gears, rocks, twigs and pigskin stay in the material group.
 - **Close button**: A **Close** button is on the right side of the bottom paging bar.
 - **Other**: When the main inventory is full, pickups go into the backpack; unfinished stacks already in the backpack are filled first.
 - **World hop filter**: While the infinite backpack is enabled, Teleportato parts and similar world-progression items are filtered out on a world hop. Personal items such as the eyebone, Abigail's Flower, Lucy and the Divining Rod are kept.
