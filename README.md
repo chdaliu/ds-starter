@@ -77,7 +77,7 @@
   - 蓝宝石：冷抗/冰冻抗性 +5%/个，最高 100%（20 个）；
   - 魔光护符：微光半径 +0.5/个，最高 8（12 个）；
   - 懒人护符：自动拾取范围 +0.5/个，最高 10（12 个）。
-- **注意**：超过上限数量的物品仍可存放，但不再增加效果；摧毁祭坛会先掉落全部物品，再返还半数材料（紫宝石 1、金块 2、石头 2）。
+- **注意**：超过上限数量的物品仍可存放，但不再增加效果；摧毁祭坛会先掉落全部物品，再返还半数材料（紫宝石 1、金块 2、石头 2）。祭坛贡献按世界分别保存并累计，去其他世界后效果仍然生效；在别的世界再放宝石会继续叠加。
 
 ### 7. 微光
 
@@ -101,7 +101,7 @@
 - **设置**：`Blood-Drinking Sword`
 - **成长**：只计算饮血剑的最后一击；普通怪物 +1 杀，Boss +50 杀；每 25 杀结算一次伤害；单次提升不足 1 点伤害时不增加。
 - **伤害节点**：0 杀 15；100 杀 45；1,000 杀 75；10,000 杀 105；100,000 杀 150。
-- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。在水中无法闪现，也不能闪到水面上。
+- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。闪现没有场景限制（洞穴、遗迹、室内、火山都可以使用），只有传送面板才有场景限制；在水中仍然无法闪现，也不能闪到水面上。
 
 ### 9. 传送
 
@@ -142,7 +142,7 @@
 - **整理按钮**：底部换页栏左侧有「整理」按钮，一键按 **工具/武器/防具/帽子/驱虫剂/船/船帆/剃刀/陷阱 → 食物 → 金币 → 种子/肥料 → 材料 → 无用饰品** 的优先级整理当前页。每页单独排序，不会移动或刷新其他页。食物按名称稳定排序，不受堆叠数量或保鲜状态影响；合金、齿轮、石头、树枝、猪皮等可食用材料仍归入材料。
 - **关闭按钮**：底部换页栏右侧有「关闭」按钮。
 - **其他**：主物品栏满后，拾取物会直接进入无限背包；背包里已有同类未满堆叠时优先堆入背包。
-- **世界跳转过滤**：开启无限背包后，跳转世界时会自动过滤传送机零件等世界专属物品；眼骨、Abigail 的花、Lucy、占卜棒等个人物品不受影响。
+- **世界跳转过滤**：开启无限背包后，跳转世界（包括传送机、Seaworthy、Skyworthy 等）时会自动过滤传送机零件和 `dropontravel` 物品（如眼骨、Packim 鱼骨、Ro Bin 砂囊石、洛宾鸟蛋等），并会递归检查无限背包及其他容器内部；Abigail 的花、Lucy、占卜棒等个人物品不受影响。
 - **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（已有则不会重复）。
 
 ### 12. 自动拾取
@@ -155,7 +155,7 @@
 - **设置**：`Auto Collect`
 - **基础规则**：范围 4、间隔 0.33 秒、使用懒人护符原版过滤规则。
 - **数值**：基础 4，最大 10（12 个橙护符）。
-- **注意**：物品栏满了会进入无限背包（如果装备）；手动丢弃的物品不会被自动捡回。
+- **注意**：物品栏满了会进入无限背包（如果装备）；手动丢弃的物品不会被自动捡回。不会自动拾取 Hamlet 城中/矿场等属于城市或守卫的物品（带 `citypossession` 的石头、工具等），避免触发守卫仇恨。
 
 ### 13. 9999 堆叠
 
@@ -191,7 +191,11 @@
   - 高草会优先使用手里的剪刀/砍刀，不会自动挖草根；翻石头/海贝石采集后也不会自动挖矿，需要再次双击；
   - 搜索范围约为两屏，会继续处理屏幕外的同类目标；
   - 目标没有上次配方/材料/种子/物品时不会操作；
-  - 玩家任何主动移动、点击、使用物品、打开界面、攻击或传送都会立即退出队列；
+  - 玩家任何主动移动、点击、使用物品、打开界面、攻击或传送都会立即退出队列；只按住 Shift 不会打断队列；
+  - 开启饮血剑且身上有时，会自动装备饮血剑并连续闪现接近目标；冷却期间会等待下一次闪现，闪现受阻时才改为正常走路；
+  - 路径被篱笆等障碍挡住时会尝试短距离侧移绕行；
+  - 双击烹饪锅会立即把附近其他可用的锅一起加入队列（目前仅对锅做这个批量入队）；
+  - 在海滩（Shipwrecked）世界步行时，只把同一座海岛上的目标加入队列，避免卡在海岛边缘；在船上时不限制海岛；
   - 水上任务必须已经坐在船上才会触发，不会自动上船。
 - **设置**：`Work Queue`
 - **注意**：默认关闭。队列不存档，退出重进会清空；锅/晾肉架/农场/NPC 的“上次使用记录”会保存。
@@ -309,7 +313,7 @@
   - Blue Gem: cold/freeze resistance +5% each, up to 100% (20);
   - Magiluminescence: glimmer radius +0.5 each, up to 8 (12);
   - Lazy Forager: auto-collect radius +0.5 each, up to 10 (12).
-- **Notes**: Items beyond the cap can still be stored but add no effect. Destroying the altar drops all stored items, then refunds half the recipe (1 Purple Gem, 2 Gold, 2 Rocks).
+- **Notes**: Items beyond the cap can still be stored but add no effect. Destroying the altar drops all stored items, then refunds half the recipe (1 Purple Gem, 2 Gold, 2 Rocks). Altar contributions are saved and added up across worlds, so the effects continue to work after a world hop and additional offerings in another world stack with them.
 
 ### 7. Glimmer
 
@@ -333,7 +337,7 @@
 - **Setting**: `Blood-Drinking Sword`
 - **Growth**: Only the final blow from this sword counts. Normal monsters +1 kill, bosses +50 kills; damage updates every 25 kills; a step worth less than 1 damage is ignored.
 - **Damage breakpoints**: 0 kills 15; 100 kills 45; 1,000 kills 75; 10,000 kills 105; 100,000 kills 150.
-- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking. Blinking is disabled while in water and cannot target water.
+- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking. Blink has no scene restrictions (caves, ruins, interiors and the volcano all work); only the teleport panel has scene restrictions. Blinking is still disabled while in water and cannot target water.
 
 ### 9. Teleport Beacons
 
@@ -373,7 +377,7 @@
 - **Sort button**: The **Sort** button on the left of the paging bar orders the current page as tools/weapons/armor/hats/bug repellent/boats/sails/razors/traps, food, coins, seeds/fertilizer, materials, then low-value trinkets. Each page is sorted separately, and other pages are not moved or refreshed. Food keeps a stable name order independent of stack size and freshness; edible crafting materials such as alloy, gears, rocks, twigs and pigskin stay in the material group.
 - **Close button**: A **Close** button is on the right side of the bottom paging bar.
 - **Other**: When the main inventory is full, pickups go into the backpack; unfinished stacks already in the backpack are filled first.
-- **World hop filter**: While the infinite backpack is enabled, Teleportato parts and similar world-progression items are filtered out on a world hop. Personal items such as the eyebone, Abigail's Flower, Lucy and the Divining Rod are kept.
+- **World hop filter**: While the infinite backpack is enabled, world travel (Teleportato, Seaworthy, Skyworthy and similar portals) filters Teleportato parts and `dropontravel` items such as the Eye Bone, Packim Fishbone, Ro Bin Gizzard Stone and Roc Robin Egg. The filter also recursively checks the infinite backpack and other containers; personal items such as Abigail's Flower, Lucy and the Divining Rod are kept.
 - **Notes**: Cannot be crafted; lost backpacks are not replaced; toggling the setting off and on grants one again if missing.
 
 ### 12. Auto Collect
@@ -386,7 +390,7 @@
 - **Setting**: `Auto Collect`
 - **Base rules**: range 4, interval 0.33s, vanilla Lazy Forager filters.
 - **Values**: Base 4, maximum 10 (12 orange amulets).
-- **Notes**: When the inventory is full, items go into the infinite backpack if equipped. Manually dropped items are not picked up.
+- **Notes**: When the inventory is full, items go into the infinite backpack if equipped. Manually dropped items are not picked up. City-owned setpiece items such as Hamlet mine rocks and tools (with `citypossession`) are never auto-collected, so guards are not provoked.
 
 ### 13. 9999 Stack Size
 
@@ -422,7 +426,11 @@
   - Tall grass prefers the shears/machete in hand; grass roots are not auto-dug, and flippable/limpet rocks are not auto-mined after harvesting - double-click again to dig/mine;
   - The search radius is about two screens, so off-screen matching targets continue to be processed;
   - Targets without a remembered recipe/material/seed/item are skipped;
-  - Any manual movement, click, item use, UI open, attack or teleport cancels the queue;
+  - Any manual movement, click, item use, UI open, attack or teleport cancels the queue; merely holding Shift does not cancel it;
+  - With the Blood-Drinking Sword enabled and carried, the queue auto-equips it and chain-blinks toward the target; it waits for the next blink cooldown instead of walking into obstacles, and falls back to walking only when blinks fail;
+  - Short sidesteps are attempted when a fence or other obstacle blocks the walking path;
+  - Double-clicking a crock pot immediately queues other nearby available pots as well (this batch enqueue is currently pot-only);
+  - On foot in the Shipwrecked world, only targets on the player's current island are queued, so the queue does not get stuck at the shoreline; this restriction is skipped while on a boat;
   - Water jobs only start while already on a boat; the queue never boards a boat automatically.
 - **Setting**: `Work Queue`
 - **Notes**: Off by default. The queue itself is not saved and clears on reload; remembered inputs for pots, dryers, farms and NPCs are saved.

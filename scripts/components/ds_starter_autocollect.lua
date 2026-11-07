@@ -10,7 +10,7 @@ local MUST_TAGS = { "isinventoryitem" }
 local CANT_TAGS = {
     "sunken", "bookshelfed", "INLIMBO", "NOCLICK", "NOFORAGE",
     "catchable", "fire", "minesprung", "mineactive", "spider",
-    "ds_starter_manual_drop",
+    "ds_starter_manual_drop", "citypossession",
 }
 
 local function HasOverflowRoom(inventory, item)
@@ -41,6 +41,16 @@ local function CanAcceptItem(inventory, item)
         return true
     end
     return HasOverflowRoom(inventory, item)
+end
+
+-- Hamlet city guards treat picking up city-owned setpiece loot (rocks, tools,
+-- crops, etc.) as theft. Never auto-collect it.
+local function IsCityOwned(item)
+    local city = item.components.citypossession
+    if city ~= nil then
+        return city.enabled ~= false
+    end
+    return item.HasTag ~= nil and item:HasTag("citypossession")
 end
 
 local AutoCollect = Class(function(self, inst)
@@ -74,6 +84,7 @@ function AutoCollect:Pickup(owner)
             and item.components.inventoryitem.canbepickedup
             and item.components.inventoryitem.cangoincontainer
             and not item.components.inventoryitem:IsHeld()
+            and not IsCityOwned(item)
             and (buffered == nil
                 or buffered.action ~= ACTIONS.PICKUP
                 or buffered.target ~= item)

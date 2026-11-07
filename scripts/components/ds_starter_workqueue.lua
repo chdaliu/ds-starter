@@ -16,6 +16,10 @@ local DOUBLE_CLICK_TIME = 0.3
 local ACTION_COOLDOWN = 0.35
 local MAX_JOBS = 48
 local ACTION_WAIT = 18
+local BLINK_RANGE = 20
+local BLINK_COOLDOWN = 1
+local BLINK_MAX_FAILURES = 3
+local IsWaterTileAt
 
 local function L(en, zh)
     local f = rawget(_G, "DSStarterL")
@@ -64,7 +68,87 @@ local function IsOnBoat(player)
         and driver:GetIsDriving()
 end
 
-local function IsWaterTileAt(x, y, z)
+local function IsWallNear(x, z)
+    local ents = TheSim:FindEntities(
+        x, 0, z, 1.0, nil, { "INLIMBO", "FX", "NOCLICK" }
+    )
+    for i = 1, #ents do
+        if ents[i]:HasTag("wall") then
+            return true
+        end
+    end
+    return false
+end
+
+-- Optional Blood-Drinking Sword shortcut: equip the sword and blink toward
+-- the target instead of only walking. Blink is skipped in water, on boats and
+-- for water targets, and each job gives up after a few failures.
+local function TryBlinkToward(self, target, range, job)
+    local blink = rawget(_G, "DSStarterBlink")
+    if blink == nil or target == nil or job == nil or job.blink_disabled then
+        return false
+    end
+    local player = self.inst
+    if player == nil or player:HasTag("playerghost") or IsOnBoat(player) then
+        return false
+    end
+    if target.Transform == nil then
+        return false
+    end
+
+    local tx, ty, tz = target.Transform:GetWorldPosition()
+    if IsWaterTileAt(tx, ty, tz) == true then
+        return false
+    end
+
+    local px, py, pz = player.Transform:GetWorldPosition()
+    local dx = tx - px
+    local dz = tz - pz
+    local distance = math.sqrt(dx * dx + dz * dz)
+    range = range or INTERACT_RANGE
+    if distance <= range + 0.1 then
+        return false
+    end
+
+    local sword = self:FindPrefab("ds_starter_yinxue_sword", true)
+    local inventory = player.components.inventory
+    if sword == nil or inventory == nil then
+        return false
+    end
+
+    local now = GetTime()
+    if job.next_blink_time ~= nil and now < job.next_blink_time then
+        -- Wait for the blink cooldown instead of walking into obstacles.
+        return true
+    end
+
+    if inventory:GetEquippedItem(EQUIPSLOTS.HANDS) ~= sword then
+        inventory:Equip(sword)
+    end
+
+    local travel = math.min(BLINK_RANGE, distance - range)
+    if travel < 1 then
+        return false
+    end
+    local x = px + (dx / distance) * travel
+    local z = pz + (dz / distance) * travel
+    if blink(x, z) then
+        job.next_blink_time = now + BLINK_COOLDOWN + 0.05
+        job.blink_failures = 0
+        job.last_progress_time = now
+        job.last_progress_pos = player:GetPosition()
+        return true
+    end
+
+    job.blink_failures = (job.blink_failures or 0) + 1
+    job.next_blink_time = now + 0.5
+    if job.blink_failures >= BLINK_MAX_FAILURES then
+        job.blink_disabled = true
+    end
+    return false
+end
+
+IsWaterTileAt = function(x, y, z)
     local map = GetWorld() ~= nil and GetWorld().Map or nil
     if map == nil or map.GetTileAtPoint == nil or map.IsWater == nil then
         return nil
@@ -73,12 +157,42 @@ local function IsWaterTileAt(x, y, z)
     return map:IsWater(tile)
 end
 
+-- In the Shipwrecked world, do not pick targets on other islands while on
+-- foot; pathing would otherwise keep pushing against the shoreline.
+local function IsSameIsland(player, target)
+    if IsOnBoat(player) then
+        return true
+    end
+    local map = GetWorld() ~= nil and GetWorld().Map or nil
+    if map == nil or map.GetIslandAtPoint == nil then
+        return true
+    end
+
+    local px, py, pz = player.Transform:GetWorldPosition()
+    local tx, ty, tz = target.Transform:GetWorldPosition()
+    local ok1, player_island = pcall(map.GetIslandAtPoint, map, px, py, pz)
+    local ok2, target_island = pcall(map.GetIslandAtPoint, map, tx, ty, tz)
+    if not ok1 or not ok2
+        or player_island == nil or target_island == nil
+    then
+        return true
+    end
+    -- 127 is NO_ISLAND; do not block when the map cannot classify a point.
+    if player_island == 127 or target_island == 127 then
+        return true
+    end
+    return player_island == target_island
+end
+
 local function IsInView(player, target)
     if target == nil
         or not target:IsValid()
         or target:IsInLimbo()
         or target.Transform == nil
     then
+        return false
+    end
+    if not IsSameIsland(player, target) then
         return false
     end
     local px, py, pz = player.Transform:GetWorldPosition()
@@ -305,6 +419,19 @@ function WorkQueue:NoteClick(target)
     return false
 end
 
+-- Giving is only meaningful for NPCs and production structures such as the
+-- bird cage. Other structures with a trader component (teleportato, lava
+-- pool, fountains, wormholes, ...) must not enter the "give" queue.
+local function CanGiveTo(target)
+    if target == nil or target.components.trader == nil then
+        return false
+    end
+    if target.prefab == "birdcage" or target.prefab == "sunken_boat" then
+        return true
+    end
+    return target.HasTag ~= nil and not target:HasTag("structure")
+end
+
 function WorkQueue:Classify(target)
     if target == nil or not target:IsValid() or target:IsInLimbo() then
         return nil
@@ -327,13 +454,16 @@ function WorkQueue:Classify(target)
         end
         return nil
     end
-    if target.components.trader ~= nil then
-        return "give"
-    end
     if target.components.shopped ~= nil
         and target.components.shopdispenser ~= nil
     then
         return "shop"
+    end
+    if target.components.trader ~= nil then
+        if CanGiveTo(target) then
+            return "give"
+        end
+        return nil
     end
     if target.components.crop ~= nil then
         if target.components.crop:IsReadyForHarvest() then
@@ -781,6 +911,9 @@ function WorkQueue:Enqueue(target, extra)
     if kind == nil then
         return false
     end
+    if not IsSameIsland(self.inst, target) then
+        return false
+    end
 
     if self.current ~= nil and self.current.target == target then
         self:CancelQueue()
@@ -808,6 +941,11 @@ function WorkQueue:Enqueue(target, extra)
     end
     self.pending[#self.pending + 1] = job
     self.queued[target] = true
+    if kind == "cook" then
+        -- Queue nearby crock pots immediately instead of waiting for the
+        -- first pot to finish.
+        self:AddContinuation(job)
+    end
     self:Start()
     return true
 end
@@ -860,6 +998,7 @@ function WorkQueue:WalkTo(target, range, job)
     if target == nil or not target:IsValid() then
         return false
     end
+    local target_x, _, target_z = target.Transform:GetWorldPosition()
     local dist_sq = FlatDistSq(player, target)
     if dist_sq <= range * range then
         if locomotor:HasDestination() then
@@ -868,13 +1007,80 @@ function WorkQueue:WalkTo(target, range, job)
         if job ~= nil then
             job.walk_start = nil
             job.walk_dist = nil
+            job.sidestep_until = nil
+            job.walk_check_time = nil
         end
         return true
     end
-    if not locomotor:HasDestination() then
-        locomotor:GoToEntity(target, nil, false)
+    local now = GetTime()
+    if job ~= nil and job.sidestep_until ~= nil then
+        if now < job.sidestep_until then
+            return false
+        end
+        job.sidestep_until = nil
+    end
+    local sg = player.sg
+    local can_walk = sg == nil
+        or ((sg:HasStateTag("idle") or sg:HasStateTag("moving"))
+            and not sg:HasStateTag("busy")
+            and not sg:HasStateTag("fishing")
+            and not sg:HasStateTag("prefish"))
+    if not locomotor:HasDestination() and can_walk then
+        if job == nil
+            or job.walk_retry_time == nil
+            or now >= job.walk_retry_time
+        then
+            locomotor:GoToEntity(target, nil, false)
+            if job ~= nil then
+                job.walk_retry_time = now + 0.5
+            end
+        end
     end
     if job ~= nil then
+        -- If the direct path is blocked (for example by a fence), try a
+        -- short sidestep instead of continuing to push into the obstacle.
+        if job.walk_check_time == nil then
+            local px, _, pz = player.Transform:GetWorldPosition()
+            job.walk_check_time = now
+            job.walk_check_x, job.walk_check_z = px, pz
+        elseif now - job.walk_check_time >= 1.0 then
+            local px, _, pz = player.Transform:GetWorldPosition()
+            local dx = px - (job.walk_check_x or px)
+            local dz = pz - (job.walk_check_z or pz)
+            if dx * dx + dz * dz < 0.25 and can_walk then
+                local base_angle =
+                    player:GetAngleToPoint(target_x, 0, target_z) * DEGREES
+                local offsets = { 45, -45, 90, -90, 135, -135 }
+                for i = 1, #offsets do
+                    local angle = base_angle + offsets[i] * DEGREES
+                    local offset = FindWalkableOffset(
+                        Vector3(px, 0, pz),
+                        angle,
+                        3.5,
+                        6,
+                        true,
+                        false
+                    )
+                    if offset ~= nil
+                        and not IsWallNear(px + offset.x, pz + offset.z)
+                    then
+                        locomotor:Stop()
+                        locomotor:GoToPoint(
+                            Vector3(px + offset.x, 0, pz + offset.z),
+                            nil,
+                            false
+                        )
+                        job.sidestep_until = now + 0.9
+                        break
+                    end
+                end
+            end
+            job.walk_check_time = now
+            job.walk_check_x, job.walk_check_z = px, pz
+        end
+        if job.sidestep_until ~= nil then
+            return false
+        end
         local dist = math.sqrt(dist_sq)
         job.walk_start = job.walk_start or GetTime()
         job.walk_dist = job.walk_dist or dist
@@ -981,6 +1187,9 @@ end
 function WorkQueue:IsJobValid(job)
     local target = job.target
     if target == nil or not target:IsValid() or target:IsInLimbo() then
+        return false
+    end
+    if not IsSameIsland(self.inst, target) then
         return false
     end
     if job.kind == "work" then
@@ -1216,7 +1425,8 @@ function WorkQueue:AddContinuation(job)
             if same then
                 local extra = { silent = true }
                 if kind == "cook" then
-                    extra.recipe = job.recipe
+                    extra.recipe = ent._ds_starter_last_recipe
+                        or job.recipe
                 end
                 local new_job = self:MakeJob(kind, ent, extra)
                 if new_job ~= nil then
@@ -1916,6 +2126,15 @@ function WorkQueue:Tick()
         and not IsOnBoat(player)
     then
         self:FinishJob("invalid")
+        return
+    end
+
+    local blink_range = (job.kind == "give" or job.kind == "shop")
+        and NPC_RANGE
+        or INTERACT_RANGE
+    if not IsOnBoat(player)
+        and TryBlinkToward(self, job.target, blink_range, job)
+    then
         return
     end
 

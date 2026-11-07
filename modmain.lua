@@ -223,9 +223,11 @@ GLOBAL.DSStarterRecalculateAltarEffects = function()
         orangeamulet = 0,
     }
 
+    local has_altars = false
     local altars = GLOBAL.DS_STARTER_ALTARS or {}
     for altar in pairs(altars) do
         if altar:IsValid() and altar.components.container ~= nil then
+            has_altars = true
             for _, item in pairs(altar.components.container.slots or {}) do
                 if item ~= nil and counts[item.prefab] ~= nil then
                     local amount = 1
@@ -238,27 +240,38 @@ GLOBAL.DSStarterRecalculateAltarEffects = function()
         end
     end
 
-    local growth = player.components.ds_starter_growth
-    if growth ~= nil then
-        growth:SetBonuses(
-            math.min(counts.purplegem, 40),
-            math.min(counts.redgem, 20),
-            math.min(counts.bluegem, 20)
-        )
-    end
+    local offerings = player.components.ds_starter_altar_offerings
+    if offerings ~= nil then
+        if has_altars then
+            offerings:SetWorldCounts(counts)
+        else
+            -- The current world may not have loaded its altars yet. Keep the
+            -- saved contribution from this world instead of clearing it.
+            offerings:ApplyTotals()
+        end
+    else
+        local growth = player.components.ds_starter_growth
+        if growth ~= nil then
+            growth:SetBonuses(
+                math.min(counts.purplegem, 40),
+                math.min(counts.redgem, 20),
+                math.min(counts.bluegem, 20)
+            )
+        end
 
-    local glimmer = player.components.ds_starter_glimmer
-    if glimmer ~= nil then
-        glimmer:SetRadius(
-            2 + math.min(counts.yellowamulet, 12) * 0.5
-        )
-    end
+        local glimmer = player.components.ds_starter_glimmer
+        if glimmer ~= nil then
+            glimmer:SetRadius(
+                2 + math.min(counts.yellowamulet, 12) * 0.5
+            )
+        end
 
-    local autocollect = player.components.ds_starter_autocollect
-    if autocollect ~= nil then
-        autocollect:SetRadius(
-            4 + math.min(counts.orangeamulet, 12) * 0.5
-        )
+        local autocollect = player.components.ds_starter_autocollect
+        if autocollect ~= nil then
+            autocollect:SetRadius(
+                4 + math.min(counts.orangeamulet, 12) * 0.5
+            )
+        end
     end
 
     local last = GLOBAL.DS_STARTER_LAST_ALTAR_COUNTS
@@ -305,7 +318,7 @@ local manual_drop_in_progress = false
 -- Abigail's flower and other irreplaceable personal items are intentionally
 -- not filtered; only world-progression items belong here.
 if INFINITE_BACKPACK then
-    local WORLD_LOCKED_TAGS = { "teleportato_part" }
+    local WORLD_LOCKED_TAGS = { "teleportato_part", "dropontravel" }
     local WORLD_LOCKED_PREFABS = {}
 
     local function IsWorldLocked(item)
@@ -441,6 +454,23 @@ if INFINITE_BACKPACK then
             return old_on_save(inv)
         end
     end)
+
+    -- Seaworthy / Skyworthy portals use TravelBetweenWorlds("dropontravel").
+    -- The infinite backpack hides items from the vanilla top-level scan, so
+    -- run the inventory's save filter once before the portal starts.
+    local old_travel_between_worlds = GLOBAL.rawget(GLOBAL, "TravelBetweenWorlds")
+    if old_travel_between_worlds ~= nil then
+        GLOBAL.rawset(GLOBAL, "TravelBetweenWorlds", function(...)
+            local player = GetThePlayer()
+            if player ~= nil and player.components.inventory ~= nil then
+                local was_teleporting = player.is_teleporting
+                player.is_teleporting = true
+                player.components.inventory:OnSave()
+                player.is_teleporting = was_teleporting
+            end
+            return old_travel_between_worlds(...)
+        end)
+    end
 end
 
 -- Read by prefab files (which run in the global environment).
@@ -694,6 +724,12 @@ end
 -- 3. Sacrifice for growth
 ---------------------------------------------------------------------------
 if SACRIFICE_GROWTH or GLIMMER or AUTO_COLLECT then
+    AddPlayerPostInit(function(inst)
+        if inst.components.ds_starter_altar_offerings == nil then
+            inst:AddComponent("ds_starter_altar_offerings")
+        end
+    end)
+
     if SACRIFICE_GROWTH then
     -- Add the persistent growth component to the player and apply
     -- heat/cold damage reduction on top of the normal health handling.
@@ -1491,6 +1527,9 @@ if WORK_QUEUE then
         -- Mouse buttons are routed through OnLeftClick/OnRightClick below.
         [GLOBAL.CONTROL_PRIMARY] = true,
         [GLOBAL.CONTROL_SECONDARY] = true,
+        -- Shift is the work-queue modifier; pressing it must not cancel work.
+        [GLOBAL.CONTROL_SPLITSTACK] = true,
+        [GLOBAL.CONTROL_FORCE_STACK] = true,
         -- Camera controls should not interrupt work.
         [GLOBAL.CONTROL_ZOOM_IN] = true,
         [GLOBAL.CONTROL_ZOOM_OUT] = true,
@@ -1552,7 +1591,7 @@ if WORK_QUEUE then
                             return true
                         end
 
-                        if queue:IsRunning() then
+                        if not shift and queue:IsRunning() then
                             queue:CancelQueue(true)
                         end
                         queue.last_click_target = nil
@@ -1577,7 +1616,11 @@ if WORK_QUEUE then
         if old_control ~= nil then
             self.OnControl = function(pc, control, down)
                 local queue = GetQueue(pc.inst)
+                local shift_held = GLOBAL.TheInput ~= nil
+                    and GLOBAL.TheInput.IsKeyDown ~= nil
+                    and GLOBAL.TheInput:IsKeyDown(GLOBAL.KEY_SHIFT)
                 if down
+                    and not shift_held
                     and queue ~= nil
                     and queue:IsRunning()
                     and not IGNORED_QUEUE_CONTROLS[control]
@@ -1882,67 +1925,31 @@ if YINXUE_SWORD then
         return false
     end
 
-    local function IsUnsafeWorld(player)
-        local world = GetTheWorld()
-        if world == nil then
-            return true
-        end
-
-        if player ~= nil
-            and (player:HasTag("inside_interior")
-                or player:HasTag("ininterior"))
-        then
-            return true
-        end
-
-        if world.IsCave ~= nil and world:IsCave() then
-            return true
-        end
-        if world.IsRuins ~= nil and world:IsRuins() then
-            return true
-        end
-        if world:HasTag("cave")
-            or world:HasTag("ruins")
-            or world:HasTag("ruin")
-            or world:HasTag("interior")
-            or world:HasTag("indoor")
-            or world:HasTag("volcano")
-        then
-            return true
-        end
-
-        return false
-    end
-
     local GetYinxueSword
 
     local function Blink(player, x, z)
         if player == nil or player:HasTag("playerghost") then
-            return
-        end
-        if IsUnsafeWorld(player) then
-            Say(player, "Cannot teleport here.", "这里不能传送。")
-            return
+            return false
         end
         if IsOnWater(player) then
             Say(player, "Cannot blink while in water.", "在水中无法闪现。")
-            return
+            return false
         end
 
         local inventory = player.components.inventory
         if inventory == nil then
-            return
+            return false
         end
         local weapon = GetYinxueSword(player)
         if weapon == nil then
-            return
+            return false
         end
 
         local now = GLOBAL.GetTime()
         if player._ds_starter_last_blink ~= nil
             and now - player._ds_starter_last_blink < BLINK_COOLDOWN
         then
-            return
+            return false
         end
 
         local px, py, pz = player.Transform:GetWorldPosition()
@@ -1950,7 +1957,7 @@ if YINXUE_SWORD then
         local dz = z - pz
         local distance = math.sqrt(dx * dx + dz * dz)
         if distance < 0.1 then
-            return
+            return false
         end
 
         if distance > BLINK_RANGE then
@@ -1961,11 +1968,11 @@ if YINXUE_SWORD then
 
         if not IsPassable(x, z) then
             Say(player, "Cannot blink there.", "那里无法闪现。")
-            return
+            return false
         end
         if IsWaterAt(x, z) then
             Say(player, "Cannot blink into water.", "不能闪现到水里。")
-            return
+            return false
         end
 
         local locomotor = player.components.locomotor
@@ -1974,6 +1981,7 @@ if YINXUE_SWORD then
         end
         TeleportPlayer(player, x, 0, z)
         player._ds_starter_last_blink = now
+        return true
     end
 
     -- Only the sword actually held in the hand counts; never auto-swap the
@@ -1991,7 +1999,7 @@ if YINXUE_SWORD then
     end
 
     GLOBAL.DSStarterBlink = function(x, z)
-        Blink(GetThePlayer(), x, z)
+        return Blink(GetThePlayer(), x, z)
     end
 end
 
