@@ -1411,12 +1411,17 @@ function WorkQueue:ExecuteFish(job)
         self:CancelQueue(true)
         return
     end
-    if rod:IsFishing() then
-        if rod.target ~= target then
-            rod:StopFishing()
+    local fishingrod = rod.components.fishingrod
+    if fishingrod == nil then
+        self:FinishJob("invalid")
+        return
+    end
+    if fishingrod:IsFishing() then
+        if fishingrod.target ~= target then
+            fishingrod:StopFishing()
             return
         end
-        if rod:HasHookedFish() or rod:FishIsBiting() then
+        if fishingrod:HasHookedFish() or fishingrod:FishIsBiting() then
             self:DoAction(target, ACTIONS.REEL, rod)
         elseif (job.cast_time or 0) > 0
             and GetTime() - job.cast_time > ACTION_WAIT
