@@ -2044,30 +2044,34 @@ if TELEPORT then
     end
 
     local function IsUnsafeWorld(player)
+        if GetTheWorld() == nil then
+            return true
+        end
+
+        -- Hamlet ruins, cave interiors and relic-house interiors are all
+        -- interiors inside the porkland world; they must not open the panel
+        -- or teleport. Real underground cave levels and the volcano are fine.
+        if player ~= nil then
+            if player.CheckIsInInterior ~= nil then
+                local ok, inside = GLOBAL.pcall(
+                    player.CheckIsInInterior,
+                    player
+                )
+                if ok and inside then
+                    return true
+                end
+            end
+            if player:HasTag("inside_interior")
+                or player:HasTag("ininterior")
+            then
+                return true
+            end
+        end
+
         local world = GetTheWorld()
-        if world == nil then
-            return true
-        end
-
-        if player ~= nil
-            and (player:HasTag("inside_interior")
-                or player:HasTag("ininterior"))
-        then
-            return true
-        end
-
-        if world.IsCave ~= nil and world:IsCave() then
-            return true
-        end
-        if world.IsRuins ~= nil and world:IsRuins() then
-            return true
-        end
-        if world:HasTag("cave")
-            or world:HasTag("ruins")
-            or world:HasTag("ruin")
+        if world.prefab == "interior"
             or world:HasTag("interior")
             or world:HasTag("indoor")
-            or world:HasTag("volcano")
         then
             return true
         end
@@ -2168,6 +2172,15 @@ if TELEPORT then
     GLOBAL.DSStarterTogglePanel = function()
         local player = GetThePlayer()
         if player == nil or player.HUD == nil then
+            return
+        end
+
+        if IsUnsafeWorld(player) then
+            Say(player, "Cannot open teleport here.", "这里不能打开传送面板。")
+            local panel = player._ds_starter_teleport_panel
+            if panel ~= nil and panel.isopen then
+                panel:Close()
+            end
             return
         end
 
