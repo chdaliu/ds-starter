@@ -114,7 +114,7 @@
 - **快捷键**：默认 Shift+右键，可改为 Ctrl+右键或 Alt+右键。
 - **暂停**：面板打开时会暂停游戏，关闭面板后恢复正常速度。
 - **注意**：不需要手持饮血剑；每页 8 个信标；新信标必须离已有信标至少 4 单位。火山和地下洞穴可以使用传送面板；Hamlet 的遗迹、洞穴内部和遗迹房子内部等室内场景不能打开面板、传送或添加信标。中文信标名可以正常输入和显示。右键点击物品、生物或建筑时不会打开传送面板，物品的右键操作保持原版。
-- **世界独立**：信标列表按世界分别保存，主世界、Shipwrecked、Hamlet、火山和地下洞穴等世界互不影响；旧版本共用的信标会保留在当前世界。
+- **世界独立**：信标列表按世界分别保存，主世界、Shipwrecked、Hamlet、火山和地下洞穴等世界互不影响。
 
 ### 10. 五格装备栏
 
@@ -345,7 +345,7 @@
 - **Settings**: `Teleport Beacons`, `Teleport Shortcut`
 - **Shortcut**: Shift+Right Click by default; can be changed to Ctrl+Right Click or Alt+Right Click.
 - **Notes**: No sword required. 8 beacons per page. New beacons need at least 4 units of spacing. The volcano and real underground caves support the teleport panel; Hamlet interiors such as ruins, cave interiors and relic-house interiors cannot open the panel, teleport or add beacons. Chinese names are supported. Right-clicking items, creatures or structures does not open the panel, so vanilla item right-click actions keep working.
-- **Per-world lists**: Beacons are saved separately for each world, so the main world, Shipwrecked, Hamlet, the volcano, underground caves and other worlds no longer share one list. Beacons from the old shared format are kept for the world being loaded.
+- **Per-world lists**: Beacons are saved separately for each world, so the main world, Shipwrecked, Hamlet, the volcano, underground caves and other worlds no longer share one list.
 
 ### 10. Five Equipment Slots
 

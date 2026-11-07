@@ -109,31 +109,7 @@ end)
 
 function Teleport:EnsureWorld()
     local key = GetWorldKey()
-    local old_key = self.current_world_key
-
-    -- The world may not have been fully available during OnLoad, or extra
-    -- identifying metadata may have appeared later. Move beacons from the
-    -- fallback/partial key to the full key instead of losing them.
-    if old_key ~= nil and old_key ~= key then
-        local pending = nil
-        if old_key == UNKNOWN_WORLD_KEY then
-            pending = self.world_beacons[old_key]
-        elseif string.sub(key, 1, #old_key + 1) == old_key .. "|" then
-            pending = self.world_beacons[old_key]
-        end
-
-        if pending ~= nil
-            and #pending > 0
-            and self.world_beacons[key] == nil
-        then
-            self.world_beacons[key] = pending
-        end
-        if pending ~= nil then
-            self.world_beacons[old_key] = nil
-        end
-    end
-
-    if old_key ~= key then
+    if self.current_world_key ~= key then
         self.current_world_key = key
         local beacons = self.world_beacons[key]
         if beacons == nil then
@@ -273,21 +249,12 @@ function Teleport:OnLoad(data)
     self.current_world_key = nil
     self.beacons = {}
 
-    if data == nil then
-        self:EnsureWorld()
-        return
-    end
-
-    if data.worlds ~= nil then
+    if data ~= nil and data.worlds ~= nil then
         for key, list in pairs(data.worlds) do
             if type(key) == "string" then
                 self.world_beacons[key] = SanitizeBeacons(list)
             end
         end
-    elseif data.beacons ~= nil then
-        -- Older saves stored one shared list. Keep it for the world being
-        -- loaded; other worlds start with their own empty lists.
-        self.world_beacons[GetWorldKey()] = SanitizeBeacons(data.beacons)
     end
 
     self:EnsureWorld()
