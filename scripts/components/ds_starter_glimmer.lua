@@ -4,6 +4,9 @@
 local START_RADIUS = 2
 local STEP = 0.5
 local MAX_RADIUS = 8
+local LIGHT_FALLOFF = 0.7
+local LIGHT_INTENSITY = 0.65
+local LIGHT_COLOUR = { 223 / 255, 208 / 255, 69 / 255 }
 
 local Glimmer = Class(function(self, inst)
     self.inst = inst
@@ -55,7 +58,19 @@ function Glimmer:Apply()
     local x, y, z = player.Transform:GetWorldPosition()
     glow.Transform:SetPosition(x, y + 0.9, z)
     glow.Light:SetRadius(self.radius)
+    glow.Light:SetFalloff(LIGHT_FALLOFF)
+    glow.Light:SetIntensity(LIGHT_INTENSITY)
+    glow.Light:SetColour(
+        LIGHT_COLOUR[1],
+        LIGHT_COLOUR[2],
+        LIGHT_COLOUR[3]
+    )
     glow.Light:Enable(true)
+    if player.AnimState ~= nil
+        and player.AnimState.SetBloomEffectHandle ~= nil
+    then
+        player.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
+    end
 end
 
 function Glimmer:OnSave()

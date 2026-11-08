@@ -87,7 +87,7 @@
   2. 出生后自动获得微光；
   3. 把 **魔光护符（黄护符）** 放进祭坛容器，每个 +0.5 半径。
 - **设置**：`Glimmer`
-- **基础光照**：半径 2、Falloff 0.7、Intensity 0.65、黄色光，不需要燃料。
+- **基础光照**：与一个魔光护符完全一致：半径 2、Falloff 0.7、Intensity 0.65、黄色光，不需要燃料。
 - **数值**：基础 2，最大 8（12 个黄护符）。
 - **注意**：祭坛需要开启 `Sacrifice Growth`、`Glimmer` 或 `Auto Collect` 才会注册配方。
 
@@ -97,11 +97,11 @@
 - **怎么用**：
   1. 开启 `Blood-Drinking Sword`；
   2. 进入存档时自动获得并装备；
-  3. 左键普通攻击，在**空地**上右键向鼠标位置闪现（最大 20 单位，1 秒冷却）。
+  3. 左键普通攻击，在**空地**上右键向鼠标位置闪现（使用懒人手杖的动画、沙尘特效和声音，右键提示显示「闪现」，没有耐久消耗和冷却）。
 - **设置**：`Blood-Drinking Sword`
 - **成长**：只计算饮血剑的最后一击；普通怪物 +1 杀，Boss +50 杀；每 25 杀结算一次伤害；单次提升不足 1 点伤害时不增加。
 - **伤害节点**：0 杀 15；100 杀 45；1,000 杀 75；10,000 杀 105；100,000 杀 150。
-- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。闪现没有场景限制（洞穴、遗迹、室内、火山都可以使用），只有传送面板才有场景限制；在水中仍然无法闪现，也不能闪到水面上。
+- **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（身上已有则不会重复）。右键点击物品、生物或建筑时保持原版操作，不会触发闪现。闪现使用懒人手杖的动画、特效和声音，但右键提示是「闪现」（懒人手杖仍显示「传送」）；没有耐久消耗和冷却。闪现没有场景限制（洞穴、遗迹、室内、火山都可以使用），也可以在水上/船上使用并带着船一起闪现；但船上只能闪到水面，不能闪到岸上。只有传送面板才有场景限制。
 
 ### 9. 传送
 
@@ -142,7 +142,7 @@
 - **整理按钮**：底部换页栏左侧有「整理」按钮，一键按 **工具/武器/防具/帽子/驱虫剂/船/船帆/剃刀/陷阱 → 食物 → 金币 → 种子/肥料 → 材料 → 无用饰品** 的优先级整理当前页。每页单独排序，不会移动或刷新其他页。食物按名称稳定排序，不受堆叠数量或保鲜状态影响；合金、齿轮、石头、树枝、猪皮等可食用材料仍归入材料。
 - **关闭按钮**：底部换页栏右侧有「关闭」按钮。
 - **其他**：主物品栏满后，拾取物会直接进入无限背包；背包里已有同类未满堆叠时优先堆入背包。
-- **世界跳转过滤**：开启无限背包后，跳转世界（包括传送机、Seaworthy、Skyworthy 等）时会自动过滤传送机零件和 `dropontravel` 物品（如眼骨、Packim 鱼骨、Ro Bin 砂囊石、洛宾鸟蛋等），并会递归检查无限背包及其他容器内部；Abigail 的花、Lucy、占卜棒等个人物品不受影响。
+- **世界跳转过滤**：开启无限背包后，跳转世界（包括传送机、Seaworthy、Skyworthy 等）时，传送机零件和 `dropontravel` 物品（如眼骨、Packim 鱼骨、Ro Bin 砂囊石、洛宾鸟蛋等）会在跳转前**掉落在起始世界的地面上**，而不是被删除；递归检查无限背包及其他容器内部。Abigail 的花、Lucy、占卜棒等个人物品不受影响。
 - **注意**：无法合成；丢失不补；关闭再开启该设置可重新发放一次（已有则不会重复）。
 
 ### 12. 自动拾取
@@ -204,7 +204,7 @@
 
 | 操作 | 默认快捷键 | 说明 |
 |---|---|---|
-| 饮血剑闪现 | 右键空地 | 需要手持饮血剑，最大 20 单位，1 秒冷却；物品/生物/建筑右键保持原版 |
+| 饮血剑闪现 | 右键空地 | 需要手持饮血剑；效果与懒人手杖一致，没有耐久消耗和冷却；物品/生物/建筑右键保持原版 |
 | 打开传送面板 | Shift + 右键空地 | 可在设置中改为 Ctrl/Alt + 右键；物品右键不受影响 |
 | 打开无限背包 | 右键点击已装备的背包图标 | 背包默认关闭 |
 | 打开祭坛容器 | 右键祭坛 | 放入/取出宝石、护符 |
@@ -323,7 +323,7 @@
   2. The light appears automatically at spawn;
   3. Put **Magiluminescence (yellow amulet)** into the altar container for +0.5 radius each.
 - **Setting**: `Glimmer`
-- **Base light**: radius 2, falloff 0.7, intensity 0.65, yellow, no fuel.
+- **Base light**: Exactly one Magiluminescence amulet: radius 2, falloff 0.7, intensity 0.65, yellow, no fuel.
 - **Values**: Base 2, maximum 8 (12 yellow amulets).
 - **Notes**: The altar recipe exists if `Sacrifice Growth`, `Glimmer` or `Auto Collect` is enabled.
 
@@ -333,11 +333,11 @@
 - **How to use**:
   1. Enable `Blood-Drinking Sword`;
   2. It is granted and equipped when entering a save;
-  3. Left click to attack, right click on **empty ground** to blink toward the cursor (up to 20 units, 1 second cooldown).
+  3. Left click to attack, right click on **empty ground** to blink toward the cursor (uses the Lazy Explorer animation, dust effects and sounds, with the right-click prompt reading "Blink", and no durability cost or cooldown).
 - **Setting**: `Blood-Drinking Sword`
 - **Growth**: Only the final blow from this sword counts. Normal monsters +1 kill, bosses +50 kills; damage updates every 25 kills; a step worth less than 1 damage is ignored.
 - **Damage breakpoints**: 0 kills 15; 100 kills 45; 1,000 kills 75; 10,000 kills 105; 100,000 kills 150.
-- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking. Blink has no scene restrictions (caves, ruins, interiors and the volcano all work); only the teleport panel has scene restrictions. Blinking is still disabled while in water and cannot target water.
+- **Notes**: Cannot be crafted; lost swords are not replaced; toggling the setting off and on grants one again if missing. Right-clicking items, creatures or structures keeps the vanilla action instead of blinking. Blink uses the Lazy Explorer animation, effects and sounds, but its right-click prompt reads "Blink" (the Lazy Explorer still reads "Telepoof"), with no durability cost or cooldown. It has no scene restrictions (caves, ruins, interiors and the volcano all work), and it can be used on water/boats to blink together with the boat; however, from a boat it may only blink to water, not onto land. Only the teleport panel has scene restrictions.
 
 ### 9. Teleport Beacons
 
@@ -377,7 +377,7 @@
 - **Sort button**: The **Sort** button on the left of the paging bar orders the current page as tools/weapons/armor/hats/bug repellent/boats/sails/razors/traps, food, coins, seeds/fertilizer, materials, then low-value trinkets. Each page is sorted separately, and other pages are not moved or refreshed. Food keeps a stable name order independent of stack size and freshness; edible crafting materials such as alloy, gears, rocks, twigs and pigskin stay in the material group.
 - **Close button**: A **Close** button is on the right side of the bottom paging bar.
 - **Other**: When the main inventory is full, pickups go into the backpack; unfinished stacks already in the backpack are filled first.
-- **World hop filter**: While the infinite backpack is enabled, world travel (Teleportato, Seaworthy, Skyworthy and similar portals) filters Teleportato parts and `dropontravel` items such as the Eye Bone, Packim Fishbone, Ro Bin Gizzard Stone and Roc Robin Egg. The filter also recursively checks the infinite backpack and other containers; personal items such as Abigail's Flower, Lucy and the Divining Rod are kept.
+- **World hop filter**: While the infinite backpack is enabled, world travel (Teleportato, Seaworthy, Skyworthy and similar portals) drops Teleportato parts and `dropontravel` items such as the Eye Bone, Packim Fishbone, Ro Bin Gizzard Stone and Roc Robin Egg on the ground in the origin world before jumping, instead of deleting them. The check is recursive through the infinite backpack and other containers; personal items such as Abigail's Flower, Lucy and the Divining Rod are kept.
 - **Notes**: Cannot be crafted; lost backpacks are not replaced; toggling the setting off and on grants one again if missing.
 
 ### 12. Auto Collect
@@ -439,7 +439,7 @@
 
 | Action | Default | Notes |
 |---|---|---|
-| Blood-Drinking Sword blink | Right Click on empty ground | Sword must be equipped; max 20 units, 1 second cooldown; item/creature/structure right-clicks keep vanilla behaviour |
+| Blood-Drinking Sword blink | Right Click on empty ground | Sword must be equipped; same effect as the Lazy Explorer, with no durability cost or cooldown; item/creature/structure right-clicks keep vanilla behaviour |
 | Open teleport panel | Shift + Right Click on empty ground | Can be changed to Ctrl/Alt + Right Click; pauses the game while open; item right-clicks are unaffected |
 | Open infinite backpack | Right-click the equipped backpack icon | Starts closed |
 | Open altar container | Right-click the altar | Add/remove gems and amulets |

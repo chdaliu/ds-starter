@@ -79,6 +79,7 @@ Assets = {
 -- independent of the feature toggles: the backpack can be enabled without
 -- the sword, and the altar recipe can exist on its own.
 local CUSTOM_ICON_PREFABS = {
+    ds_starter_altar = true,
     ds_starter_yinxue_sword = true,
     ds_starter_infinite_backpack = true,
 }
@@ -338,7 +339,18 @@ if INFINITE_BACKPACK then
         return false
     end
 
-    local function StripContainer(container, removed)
+    local function DropAtOwner(owner, item)
+        if owner == nil or item == nil or not item:IsValid() then
+            return
+        end
+        local x, y, z = owner.Transform:GetWorldPosition()
+        item.Transform:SetPosition(x, y, z)
+        if item.components.inventoryitem ~= nil then
+            item.components.inventoryitem:OnDropped(true)
+        end
+    end
+
+    local function StripContainer(container, owner, removed)
         if container == nil or container.slots == nil then
             return
         end
@@ -351,7 +363,7 @@ if INFINITE_BACKPACK then
                 elseif item.components ~= nil
                     and item.components.container ~= nil
                 then
-                    StripContainer(item.components.container, removed)
+                    StripContainer(item.components.container, owner, removed)
                 end
             end
         end
@@ -360,9 +372,7 @@ if INFINITE_BACKPACK then
             local entry = pending[i]
             container:RemoveItemBySlot(entry.slot)
             removed[#removed + 1] = entry.item.prefab
-            if entry.item:IsValid() then
-                entry.item:Remove()
-            end
+            DropAtOwner(owner, entry.item)
         end
     end
 
@@ -388,16 +398,21 @@ if INFINITE_BACKPACK then
                         elseif item.components ~= nil
                             and item.components.container ~= nil
                         then
-                            StripContainer(item.components.container, removed)
+                            StripContainer(
+                                item.components.container,
+                                owner,
+                                removed
+                            )
                         end
                     end
                 end
                 for i = 1, #pending_items do
                     local item = pending_items[i]
-                    inv:RemoveItem(item, true)
-                    removed[#removed + 1] = item.prefab
-                    if item:IsValid() then
-                        item:Remove()
+                    if inv:DropItem(item, true) == nil then
+                        removed[#removed + 1] = item.prefab
+                        DropAtOwner(owner, item)
+                    else
+                        removed[#removed + 1] = item.prefab
                     end
                 end
 
@@ -412,7 +427,11 @@ if INFINITE_BACKPACK then
                         elseif item.components ~= nil
                             and item.components.container ~= nil
                         then
-                            StripContainer(item.components.container, removed)
+                            StripContainer(
+                                item.components.container,
+                                owner,
+                                removed
+                            )
                         end
                     end
                 end
@@ -420,8 +439,8 @@ if INFINITE_BACKPACK then
                     local entry = pending_equips[i]
                     inv:Unequip(entry.slot)
                     removed[#removed + 1] = entry.item.prefab
-                    if entry.item:IsValid() then
-                        entry.item:Remove()
+                    if inv:DropItem(entry.item, true) == nil then
+                        DropAtOwner(owner, entry.item)
                     end
                 end
 
@@ -430,14 +449,15 @@ if INFINITE_BACKPACK then
                         local item = inv.activeitem
                         removed[#removed + 1] = item.prefab
                         inv:SetActiveItem(nil)
-                        if item:IsValid() then
-                            item:Remove()
+                        if inv:DropItem(item, true) == nil then
+                            DropAtOwner(owner, item)
                         end
                     elseif inv.activeitem.components ~= nil
                         and inv.activeitem.components.container ~= nil
                     then
                         StripContainer(
                             inv.activeitem.components.container,
+                            owner,
                             removed
                         )
                     end
@@ -855,6 +875,9 @@ if SACRIFICE_GROWTH or GLIMMER or AUTO_COLLECT then
             "images/inventoryimages/ds_starter_altar.xml"
         )
         altar_recipe.image = "ds_starter_altar.tex"
+        -- The source images are authored at 128px; the crafting slot is
+        -- designed for 64px icons.
+        altar_recipe.imageScale = 0.5
     end
 end
 
@@ -1832,10 +1855,31 @@ if YINXUE_SWORD then
     -- Blood-Drinking Sword: blink
     -----------------------------------------------------------------------
     local BLINK_RANGE = 20
-    local BLINK_COOLDOWN = 1
+
+    -- Right-click prompt for the sword's blink. The vanilla Lazy Explorer
+    -- keeps its "Telepoof" / "传送" text; only this weapon says "Blink" /
+    -- "闪现".
+    GLOBAL.STRINGS.ACTIONS.DS_STARTER_BLINK = L("Blink", "闪现")
 
     AddPlayerPostInit(function(inst)
         inst._ds_starter_last_blink = nil
+
+        local old_override = inst.ActionStringOverride
+        inst.ActionStringOverride = function(doer, action)
+            if old_override ~= nil then
+                local str = old_override(doer, action)
+                if str ~= nil then
+                    return str
+                end
+            end
+            if action ~= nil
+                and action.action == GLOBAL.ACTIONS.BLINK
+                and action.invobject ~= nil
+                and action.invobject.prefab == "ds_starter_yinxue_sword"
+            then
+                return GLOBAL.STRINGS.ACTIONS.DS_STARTER_BLINK
+            end
+        end
     end)
 
     local function Say(player, en, zh)
@@ -1931,10 +1975,6 @@ if YINXUE_SWORD then
         if player == nil or player:HasTag("playerghost") then
             return false
         end
-        if IsOnWater(player) then
-            Say(player, "Cannot blink while in water.", "在水中无法闪现。")
-            return false
-        end
 
         local inventory = player.components.inventory
         if inventory == nil then
@@ -1942,13 +1982,6 @@ if YINXUE_SWORD then
         end
         local weapon = GetYinxueSword(player)
         if weapon == nil then
-            return false
-        end
-
-        local now = GLOBAL.GetTime()
-        if player._ds_starter_last_blink ~= nil
-            and now - player._ds_starter_last_blink < BLINK_COOLDOWN
-        then
             return false
         end
 
@@ -1966,21 +1999,22 @@ if YINXUE_SWORD then
             z = pz + dz * scale
         end
 
-        if not IsPassable(x, z) then
-            Say(player, "Cannot blink there.", "那里无法闪现。")
-            return false
-        end
-        if IsWaterAt(x, z) then
-            Say(player, "Cannot blink into water.", "不能闪现到水里。")
-            return false
-        end
-
         local locomotor = player.components.locomotor
         if locomotor ~= nil and locomotor.Stop ~= nil then
             locomotor:Stop()
         end
+
+        local blinkstaff = weapon.components.blinkstaff
+        if blinkstaff ~= nil then
+            local point = GLOBAL.Vector3(x, 0, z)
+            if not blinkstaff:CanBlinkToPoint(point) then
+                Say(player, "Cannot blink there.", "那里无法闪现。")
+                return false
+            end
+            return blinkstaff:Blink(point, player)
+        end
+
         TeleportPlayer(player, x, 0, z)
-        player._ds_starter_last_blink = now
         return true
     end
 
@@ -2243,16 +2277,16 @@ if TELEPORT or YINXUE_SWORD then
                     -- ground. Clicks on HUD slots, world items/creatures, or
                     -- while holding an item keep their vanilla behaviour
                     -- (split, use, attack, deploy, etc.).
-                    if active_item == nil
-                        and right_action == nil
+                    local plain_ground = active_item == nil
                         and GLOBAL.TheInput:GetHUDEntityUnderMouse() == nil
                         and GLOBAL.TheInput:GetWorldEntityUnderMouse() == nil
-                    then
+                    if plain_ground then
                         if TELEPORT and TeleportModifierDown() then
                             GLOBAL.DSStarterTogglePanel()
                             return
                         end
-
+                    end
+                    if plain_ground and right_action == nil then
                         if YINXUE_SWORD then
                             local weapon = inventory ~= nil
                                 and inventory:GetEquippedItem(

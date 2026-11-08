@@ -17,7 +17,7 @@ local ACTION_COOLDOWN = 0.35
 local MAX_JOBS = 48
 local ACTION_WAIT = 18
 local BLINK_RANGE = 20
-local BLINK_COOLDOWN = 1
+local BLINK_COOLDOWN = 0.35
 local BLINK_MAX_FAILURES = 3
 local IsWaterTileAt
 
@@ -89,7 +89,7 @@ local function TryBlinkToward(self, target, range, job)
         return false
     end
     local player = self.inst
-    if player == nil or player:HasTag("playerghost") or IsOnBoat(player) then
+    if player == nil or player:HasTag("playerghost") then
         return false
     end
     if target.Transform == nil then
@@ -97,7 +97,13 @@ local function TryBlinkToward(self, target, range, job)
     end
 
     local tx, ty, tz = target.Transform:GetWorldPosition()
-    if IsWaterTileAt(tx, ty, tz) == true then
+    local target_is_water = IsWaterTileAt(tx, ty, tz) == true
+    if IsOnBoat(player) then
+        -- A boat may only blink to water; blinking onto land is not allowed.
+        if not target_is_water then
+            return false
+        end
+    elseif target_is_water then
         return false
     end
 
@@ -2132,9 +2138,7 @@ function WorkQueue:Tick()
     local blink_range = (job.kind == "give" or job.kind == "shop")
         and NPC_RANGE
         or INTERACT_RANGE
-    if not IsOnBoat(player)
-        and TryBlinkToward(self, job.target, blink_range, job)
-    then
+    if TryBlinkToward(self, job.target, blink_range, job) then
         return
     end
 
