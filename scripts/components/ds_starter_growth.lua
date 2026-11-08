@@ -134,6 +134,25 @@ function Growth:Apply()
             sanity.max * percent
         )
         local new_percent = sanity:GetPercent()
+        -- Writing current directly skips the vanilla sane/insane threshold
+        -- checks. Keep the flag consistent with the new percentage so a
+        -- high-sanity player does not keep the low-sanity screen effect.
+        local tuning = rawget(_G, "TUNING") or {}
+        local insane_thresh = tuning.SANITY_BECOME_INSANE_THRESH or 0.15
+        local sane_thresh = tuning.SANITY_BECOME_SANE_THRESH or 0.175
+        if sanity.sane == false and new_percent >= sane_thresh then
+            sanity.sane = true
+            if sanity.onSane ~= nil then
+                sanity.onSane(self.inst)
+            end
+            self.inst:PushEvent("gosane", {})
+        elseif sanity.sane ~= false and new_percent <= insane_thresh then
+            sanity.sane = false
+            if sanity.onInsane ~= nil then
+                sanity.onInsane(self.inst)
+            end
+            self.inst:PushEvent("goinsane", {})
+        end
         self.inst:PushEvent("sanitydelta", {
             oldpercent = new_percent,
             newpercent = new_percent,

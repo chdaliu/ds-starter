@@ -66,11 +66,6 @@ function Glimmer:Apply()
         LIGHT_COLOUR[3]
     )
     glow.Light:Enable(true)
-    if player.AnimState ~= nil
-        and player.AnimState.SetBloomEffectHandle ~= nil
-    then
-        player.AnimState:SetBloomEffectHandle("shaders/anim.ksh")
-    end
 end
 
 function Glimmer:OnSave()
